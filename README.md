@@ -1,7 +1,7 @@
 # Narek Veranyan's Exercise Tracker Project
 
 # Vision Statement 
-> Build an exercise tracker that allows the cyclist to track activities
+> Build software that allows cyclists to track activities
 > over a map, record gear, and measure performance changes over time.
 
 # Resources
@@ -13,23 +13,34 @@
 classDiagram
     class Cyclist {
         -List~Activity~ activities
-        -Collection~Gear~ gears
+        -Collection~Bicycle~ bikes
 
 %%        +addActivity() void
-%%        +addGear(text) void
+%%        +addBike(text) void
     }
     
     class Map {
-        -PositiveNumber width
-        -PositiveNumber length
+        %% should be > 0
+        -int width
+        %% should be > 0
+        -int length
         -Set~Obstacle~ obstacles
         
-%%        +addObstacle(WholeNumber, WholeNumber, WholeNumber, WholeNumber) void
+        %% params should be > 0
+        +addObstacle(int, int, int, int) void
+    }
+    
+    class MapPrinter {
+        -Map map
+        
+        +print() void
     }
     
     class Obstacle {
-        -PositveNumber width
-        -PositiveNumber length
+        %% should be > 0
+        -int width
+        %% should be > 0
+        -int length
         -NaturalNumber coordinateX
         -NaturalNumber coordinateY
     }
@@ -57,6 +68,7 @@ classDiagram
     Cyclist --* Bicycle
     Activity --* Route
     Map --* Obstacle
+    MapPrinter --o Map
 
     Activity --o Bicycle
 ```
