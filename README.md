@@ -12,33 +12,59 @@
 
 ```mermaid
 classDiagram
+%%    class TrackerManager {
+%%        Exerciser exerciser
+%%        Map map
+%%        
+%%        +Read(Scanner) void 
+%%    }
+%%    
+    
     class Exerciser {
-        %% order by date        
-        -List~Activity~ activities 
-        -Collection~Gear~ gears
+        %% order by date
+        -String name
+        -ArrayList~Activity~ activities 
+        -Set~Gear~ gears
         
-        +addActivity() void
-        +removeActivity(PositiveNumber) TrueFalse
+        +addActivity() boolean
+        %% should be >= 0
+        +removeActivity(int) boolean
         +addGear() void
-        +removeGear(PositiveNumber) TrueFalse
+        %% should be >= 0
+        +removeGear(int) boolean
     }
+    
+    note for Exerciser " Invariants
+        * name != null
+        * name.length() >= 1
+        * activities != null
+        * gears != null
+        * gears.length >= 1 
+    "
     
     class Map {
         %% should be > 0
         -int width
         %% should be > 0
         -int length
-        -Set~Obstacle~ obstacles
-        -Route route
+        -ArrayList~Obstacle~ obstacles
+        -ArrayList~Route~ routes
         
         %% should return > 0
         +getWidth() int
         %% should return > 0
         +getLength() int
-        +getObstacles() Set~Obstacle~
         %% params should be > 0
         +addObstacle(int, int, int, int) boolean
+        +isInObstacle(int x, int y) boolean
+        +isInRoute(int x, int y) boolean
     }
+    
+    note for Map "Invariants
+        * width >= 1
+        * length >= 1
+        * obstacles != null
+    "
     
     class Obstacle {
         %% should be > 0
@@ -50,38 +76,57 @@ classDiagram
         %% should be > 0
         -int lowerRightY
         
-        %% should return > 0
-        upperLeftX() int
-        upperLeftY() int
-        lowerRigthX() int
-        lowerRigthY() int
+        +contains(int x, int y) boolean
     }
     
     class Route {
-        List~NaturalNumber~ coordinatesX
-        List~NaturalNumber~ coordinatesY
+        ArrayList~Integer~ coordinatesX
+        ArrayList~Integer~ coordinatesY
+
+        +move(Direction, int) void
+        +contains(int x, int y) boolean
     }
     
     class Activity {
-        -Gear gear
-        -Date start
-        -Date end
         -Route route
-        
-        +setGear(Gear) void
+        -Gear gear
+        -LocalDate start
+        -LocalDate end
+     
+        +startActivity() void
+        +endActivity() void
     }
+    
+    %% FIXME how to state end > start
+    note for Activity "Invariants
+        * gear != null
+        * start != null
+        * end != null
+        * end > start
+        * route != null
+    "
     
     class Gear {
         -GearType type
-        -text name
+        -String name
     }
+    
+    note for Gear "Invariants
+        * type != null
+        * name != null
+        * name.length() >= 1
+    "
     
     class MapPrinter {
         -Map map
         
-        +print() void
+        +printRoutes() void
+        +printRoute(int i)
     }
-    
+
+    note for MapPrinter "Invariants
+        * map != null
+    "
     
     
     
@@ -91,7 +136,7 @@ classDiagram
     Activity --* Route
     Map --* Obstacle
     
-    Activity --o Gear
     Map --o Route
+    Activity --o Gear
     MapPrinter --o Map
 ```

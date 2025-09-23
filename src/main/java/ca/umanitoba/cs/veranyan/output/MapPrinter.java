@@ -2,6 +2,8 @@ package ca.umanitoba.cs.veranyan.output;
 
 import ca.umanitoba.cs.veranyan.model.map.Map;
 
+import java.sql.SQLOutput;
+
 public class MapPrinter {
     public static final String OBSTACLE = "*";
     public static final String EMPTY = ".";
@@ -10,30 +12,37 @@ public class MapPrinter {
     private final Map m;
 
     public MapPrinter(final Map map){
+        if(map == null)
+            throw new IllegalArgumentException("Map instance required as a parameter. Received null.");
+
         this.m = map;
     }
 
     /**
      * Prints the map grid, including obstacles
      */
-    public void print(){
-        var obstacles = this.m.getObstacles();
-
+    public void printRoutes(){
         for (int j = 1; j <= this.m.getLength(); j++){ // y-coordinates
             for (int i = 1; i <= this.m.getWidth(); i++){ // x-coordinates
-                boolean isInObstacle = false;
-                for(var obstacle : obstacles){
-                    var coordinates = new int[][] {{obstacle.upperLeftX(), obstacle.upperLeftY()}, {obstacle.lowerRightX(), obstacle.lowerRightY()}};
-                    isInObstacle = ((i >= coordinates[0][0]) && (i <= coordinates[1][0]) &&
-                            ((j >= coordinates[0][1]) && (j <= coordinates[1][1])));
-                    if(isInObstacle) break;
-                }
-
-                if(isInObstacle)
+                if(this.m.isInObstacle(i, j))
                     System.out.print(OBSTACLE + " ");
-                else
-                    System.out.print(EMPTY + " ");
-                // FIXME add Route path entry option as well
+                else if(this.m.isInRoute(i, j)) // searches in all routes
+                    System.out.println(ROUTE + " ");
+                else System.out.println(EMPTY + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public void printRoute(int index){
+        for (int j = 1; j <= this.m.getLength(); j++){ // y-coordinates
+            for (int i = 1; i <= this.m.getWidth(); i++){ // x-coordinates
+                if(this.m.isInObstacle(i, j))
+                    System.out.print(OBSTACLE + " ");
+                else if(this.m.isInRoute(index, i, j)) // searches in particular route
+                    System.out.println(ROUTE + " ");
+                else System.out.println(EMPTY + " ");
             }
             System.out.println();
         }

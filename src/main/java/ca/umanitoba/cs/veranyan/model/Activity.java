@@ -6,16 +6,22 @@ import java.time.LocalDateTime;
 
 public class Activity {
     private final Gear gear;
-    private final LocalDateTime start;
+    private LocalDateTime start;
     private LocalDateTime end;
     private Route route;
 
-    public Activity(Gear gear, int startX, int startY) {
+    public Activity(Gear gear, Route route) {
         this.gear = gear;
+        this.route = route;
+    }
+
+    public void startActivity(){
         this.start = LocalDateTime.now();
     }
 
-    public void move(Direction direction, int steps){
-
+    public void finishActivity(){
+        this.end = LocalDateTime.now();
     }
+
+
 }

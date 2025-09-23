@@ -2,7 +2,7 @@ package ca.umanitoba.cs.veranyan.model;
 
 
 // initial implementation draft
-public record Gear(String name, Gears type, int wheelSize){
+public record Gear(String name, GearType type, int wheelSize){
     public Gear{
         // validate parameters
         if(wheelSize <=0)

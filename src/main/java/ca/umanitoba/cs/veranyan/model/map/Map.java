@@ -8,12 +8,14 @@ public class Map {
     private final int width; // should be > 0
     private final int length; // should be > 0
     private final ArrayList<Obstacle> obstacles;
+    private final ArrayList<Route> routes;
 
     // cannot create instances from external
     private Map(final int width, final int length) {
         this.width = width;
         this.length = length;
         this.obstacles = new ArrayList<>();
+        this.routes = new ArrayList<>();
     }
 
     public static Map getInstance(int width, int length) {
@@ -44,11 +46,30 @@ public class Map {
         return length;
     }
 
-    /**
-     * @return the obstacles on the map
-     */
-    public ArrayList<Obstacle> getObstacles() {
-        return (ArrayList<Obstacle>) this.obstacles.clone();
+    public boolean isInObstacle(int x, int y) {
+        boolean isInObstacle = false;
+
+        for(var obstacle : this.obstacles){
+            isInObstacle = obstacle.contains(x, y);
+            if(isInObstacle) break;
+        }
+
+        return isInObstacle;
+    }
+
+    public boolean isInRoute(int x, int y){
+        boolean isInRoute = false;
+
+        for(var route : this.routes){
+            isInRoute = route.contains(x, y);
+            if(isInRoute) break;
+        }
+
+        return isInRoute;
+    }
+
+    public boolean isInRoute(int i, int x, int y){
+        return this.routes.get(i).contains(x, y);
     }
 
     /**

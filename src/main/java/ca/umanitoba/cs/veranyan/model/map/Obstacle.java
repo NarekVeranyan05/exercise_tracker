@@ -18,7 +18,10 @@ public record Obstacle(int upperLeftX, int upperLeftY, int lowerRightX, int lowe
             throw new IllegalArgumentException(
                     String.format("cannot accept non-positive width and length, received width %d and length %d.",
                             width, length));
+    }
 
-
+    public boolean contains(int x, int y){
+        return (x >= this.upperLeftX()) && (x <= this.lowerRightX()) &&
+                (y >= this.upperLeftY()) && (y <= this.lowerRightY());
     }
 }
