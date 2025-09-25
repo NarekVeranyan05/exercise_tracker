@@ -1,4 +1,4 @@
-package ca.umanitoba.cs.veranyan.model;
+package ca.umanitoba.cs.veranyan.model.gear;
 
 public enum GearType {
     ROAD_BIKE,

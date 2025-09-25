@@ -60,6 +60,10 @@ public class ArraySet<T> implements Set<T> {
         return false;
     }
 
+    public void removeByIndex(int i){
+        this.elements.remove(i);
+    }
+
     @Override
     public boolean containsAll(Collection<?> c) {
         return false;

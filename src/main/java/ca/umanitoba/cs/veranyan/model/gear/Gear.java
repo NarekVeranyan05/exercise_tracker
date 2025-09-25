@@ -1,11 +1,11 @@
-package ca.umanitoba.cs.veranyan.model;
+package ca.umanitoba.cs.veranyan.model.gear;
 
 
 // initial implementation draft
-public record Gear(String name, GearType type, int wheelSize){
+public record Gear(GearType type, String name, int avgSpeed){
     public Gear{
         // validate parameters
-        if(wheelSize <=0)
+        if(avgSpeed <=0)
             throw new IllegalArgumentException("Cannot accept non-positive wheel size");
         if(name == null || name.isEmpty())
             throw new IllegalArgumentException("Cannot accept empty name.");

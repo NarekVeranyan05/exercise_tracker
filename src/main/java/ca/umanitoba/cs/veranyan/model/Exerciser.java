@@ -1,46 +1,33 @@
 package ca.umanitoba.cs.veranyan.model;
 
 import ca.umanitoba.cs.veranyan.model.collections.ArraySet;
-
-import java.util.ArrayList;
+import ca.umanitoba.cs.veranyan.model.gear.Gear;
+import ca.umanitoba.cs.veranyan.model.gear.GearType;
+import ca.umanitoba.cs.veranyan.model.map.Map;
 
 public class Exerciser {
-    private ArrayList<Activity> activities;
     private ArraySet<Gear> gears;
+    private ArraySet<Activity> activities;
 
     public Exerciser(){
-        this.activities = new ArrayList<>();
+        this.activities = new ArraySet<>();
         this.gears = new ArraySet<>();
     }
 
-    public boolean addActivity(int i){
-        if(this.gears.isEmpty()) // should have gear to add an activity
-            return false;
-        else {
-            activities.add(new Activity(this.gears.get(i)));
-            return true;
-        }
+    public void addGear(GearType type, String name, int wheelSize){
+        this.gears.add(new Gear(type, name, wheelSize));
     }
 
-    public boolean removeActivity(int i){
-        if(i < 0 || i >= this.activities.size())
-            return false;
-        else{
-            this.activities.remove(i);
-            return true;
-        }
+    public void removeGear(int i){
+        this.gears.removeByIndex(i);
     }
 
-    public void addGear(String name, GearType type, int wheelSize){
-        this.gears.add(new Gear(name, type, wheelSize));
+    public void addActivity(Map map, int i, int x, int y){
+        this.activities.add(new Activity(map, this.gears.get(i), x, y));
     }
 
-    public boolean removeGear(int i){
-        if(i < 0 || i >= this.gears.size())
-            return false;
-        else {
-            this.gears.remove(i);
-            return true;
-        }
+    public void removeActivity(int i){
+        this.activities.removeByIndex(i);
     }
+
 }

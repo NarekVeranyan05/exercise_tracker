@@ -1,6 +1,6 @@
 # Narek Veranyan's Exercise Tracker Project
 
-# Vision Statement 
+# Vision Statement
 > Build software that allows exercises to track exercises
 > over a map, log and share information about their exercises,
 > and measure performance over time
@@ -10,133 +10,171 @@
 
 ## Class Diagram
 
-```mermaid
+```mermaid 
 classDiagram
-%%    class TrackerManager {
-%%        Exerciser exerciser
-%%        Map map
-%%        
-%%        +Read(Scanner) void 
-%%    }
-%%    
-    
     class Exerciser {
-        %% order by date
-        -String name
-        -ArrayList~Activity~ activities 
-        -Set~Gear~ gears
+        -ArraySet~Gear~ gears
+        -ArraySet~Activity~ activities
         
-        +addActivity() boolean
-        %% should be >= 0
-        +removeActivity(int) boolean
-        +addGear() void
-        %% should be >= 0
-        +removeGear(int) boolean
+        +addGear(GearType, String, int)
+        +removeGear(int) void
+        +addActivity(int) void 
+        +removeActivity(int) void
     }
     
-    note for Exerciser " Invariants
-        * name != null
-        * name.length() >= 1
-        * activities != null
+    note for Exerciser"invariants:
         * gears != null
-        * gears.length >= 1 
-    "
-    
-    class Map {
-        %% should be > 0
-        -int width
-        %% should be > 0
-        -int length
-        -ArrayList~Obstacle~ obstacles
-        -ArrayList~Route~ routes
-        
-        %% should return > 0
-        +getWidth() int
-        %% should return > 0
-        +getLength() int
-        %% params should be > 0
-        +addObstacle(int, int, int, int) boolean
-        +isInObstacle(int x, int y) boolean
-        +isInRoute(int x, int y) boolean
-    }
-    
-    note for Map "Invariants
-        * width >= 1
-        * length >= 1
-        * obstacles != null
-    "
-    
-    class Obstacle {
-        %% should be > 0
-        -int upperLeftX
-        %% should be > 0
-        -int upperLeftY
-        %% should be > 0
-        -int lowerRightX
-        %% should be > 0
-        -int lowerRightY
-        
-        +contains(int x, int y) boolean
-    }
-    
-    class Route {
-        ArrayList~Integer~ coordinatesX
-        ArrayList~Integer~ coordinatesY
-
-        +move(Direction, int) void
-        +contains(int x, int y) boolean
-    }
-    
-    class Activity {
-        -Route route
-        -Gear gear
-        -LocalDate start
-        -LocalDate end
-     
-        +startActivity() void
-        +endActivity() void
-    }
-    
-    %% FIXME how to state end > start
-    note for Activity "Invariants
-        * gear != null
-        * start != null
-        * end != null
-        * end > start
-        * route != null
+        * gears.length >= 1
+        * activities != null
     "
     
     class Gear {
         -GearType type
         -String name
+        -int avgSpeed
     }
     
-    note for Gear "Invariants
+    note for Gear"invariants:
         * type != null
         * name != null
         * name.length() >= 1
+        * speed > 0
     "
     
-    class MapPrinter {
+    class GearType {
+        <<enumeration>>
+        ROAD_BIKE,
+        MOUNTAIN_BIKE,
+        COMMUTER_BIKE,
+        ELECTRIC_BIKE,
+        TANDEM_BIKE
+    }
+    
+    class Activity{
         -Map map
+        -LocalDateTime start
+        -LocalDateTime end
+        %% should have gear to start activity
+        -Gear gear
+        -Route route
         
+        +startActivity() void
+        +getRoute() Route
+        +move(Direction, int) void
+        +endActivity() void
+    }
+    
+    note for Activity"invariants:
+        * gear != null
+        * route != null
+    "
+        
+    class Route {
+        %% each entry must be >= 0
+        -ArrayList~Integer~ coordinatesX
+        %% each entry must be >= 0
+        -ArrayList~Integer~ coordinatesY
+        
+        +getCurrentX() int
+        +getCurrentY() int
+        +getDistance() int
+        +addCoordinate(int, int) void
+        +contains(int, int) boolean
+    }
+    
+    note for Route"invariants:
+        * coordinatesX != null
+        * coordinatesX.size() >= 1
+        * coordinatesY != null
+        * coordinatesY.size() >= 1
+    "
+    
+    class Direction {
+        <<enumeration>>
+        NORTH,
+        SOUTH,
+        EAST,
+        WEST
+    }
+    
+    class Map {
+        -int width
+        -int length
+        -ArraySet~Obstacle~ obstacles
+        
+        +getObstacles() ArraySet~Obstacle~
+        +addObstacle(int, int, int, int)
+    }
+    
+    note for Map"invariants:
+        * width >= 1
+        * length >= 1
+        * obstacles != null"
+    
+    class Obstacle {
+        -int upperLeftX
+        -int upperLeftY
+        -int lowerRightX
+        -int lowerRightY
+        
+        +contains(int, int) void
+    }
+    
+    note for Obstacle"invariants
+        * upperLeftX >= 0
+        * upperLeftY >= 0
+        * lowerRightX > upperLeftX
+        * lowerRightY > upperLeftY
+    "
+    
+    class GearPrinter {
+        -ArraySet~Gear~ gears
+        
+        +setGears(ArrayList~Gear~) void
+        +printGears() void
+    }
+    
+    note for GearPrinter"invariants
+        * gears != null
+    "
+    
+    class RoutePrinter {
+        -Map map
+        -ArrayList~Route~ routes
+        
+        +setRoutes(ArrayList~Route~) void
         +printRoutes() void
-        +printRoute(int i)
     }
 
-    note for MapPrinter "Invariants
+    note for RoutePrinter"invariants
         * map != null
+        * routes != null
     "
     
-    
+    class ObstaclePrinter {
+        -ArraySet~Obstacle~ obstacles
+        
+        +setObstacles(ArraySet~Obstacle~) void
+        +printObstacles() void
+    }
+
+    note for ObstaclePrinter"invariants
+        * obstacles != null
+    "
     
     %% class relationships
     Exerciser --* Activity
     Exerciser --* Gear
     Activity --* Route
     Map --* Obstacle
+    Gear --* GearType
     
-    Map --o Route
     Activity --o Gear
-    MapPrinter --o Map
+    Activity --o Map
+    GearPrinter --o Gear
+    RoutePrinter --o Route
+    RoutePrinter --o Map
+    ObstaclePrinter --o Obstacle
+
+    Route --> Direction
 ```
