@@ -1,45 +1,80 @@
-# Narek Veranyan's Exercise Tracker Project
+* Title: Track-Me-Riding
+* Author: Narek Veranyan (veranyan@myumanitoba.ca)
+* Student number: 8040209
+* Date: October __, 2025
+---
 
-# Vision Statement
+# Overview
+> Track-Me-Riding is an implementation of an exercise tracker software for COMP 2450 
+> specifically designed for tracking cycling activities. The software offers
+>
+>   * A user-defined grid-structured map to track an activity.
+>   * There are obstacles that can be added to the map.
+>   * There are gears to be recorded and later added to an activity.
+
+## Vision Statement
 > Build software that allows exercises to track exercises
-> over a map, log and share information about their exercises,
-> and measure performance over time
+> over a map, share information about their exercises,
+> and measure performance over time.
 
-# Resources
-* found information about bike types: https://www.edinburghbicycle.com/info/blog/types-of-bikes-buying-guide
+## Resources
+* used the following existing system to come up with classes in the domain model: <https://www.strava.com/>
+* found information about bike types: <https://www.edinburghbicycle.com/info/blog/types-of-bikes-buying-guide>
 
-## Class Diagram
+## Running
+This project was built using Maven and developed in IntelliJ IDEA.
+The project can be run using several options:
+
+1. Open the `Main.java` class and click the green play button 
+    in the top right corner.
+2. Run Maven on the command line:
+    ```
+    mvn compile exec:java -Dexec.mainClass="ca.umanitoba.cs.veranyan.Main"   
+    ```
+
+
+# Domain model
+
+Here's my domain model:
 
 ```mermaid 
 classDiagram
     class Exerciser {
-        -ArraySet~Gear~ gears
-        -ArraySet~Activity~ activities
+        -Map map
+        -SortedSet~Gear~ gears
         
-        +addGear(GearType, String, int)
+        +getGears() SortedSet~Gear~
+        +getGear(int) Gear
+        +addGear(GearType, String, double)
         +removeGear(int) void
-        +addActivity(int) void 
-        +removeActivity(int) void
+        +getMap() Map
+        +addMap(Map) void
+        +removeMap() void
     }
     
     note for Exerciser"invariants:
         * gears != null
         * gears.length >= 1
-        * activities != null
+        * loop: no entry is null in gears
     "
+
+    Exerciser --* Gear
+    Exerciser --* Map
     
     class Gear {
         -GearType type
         -String name
-        -int avgSpeed
+        -double avgSpeed
     }
     
     note for Gear"invariants:
         * type != null
         * name != null
         * name.length() >= 1
-        * speed > 0
+        * avgSpeed > 0
     "
+    
+    Gear --* GearType
     
     class GearType {
         <<enumeration>>
@@ -49,67 +84,73 @@ classDiagram
         ELECTRIC_BIKE,
         TANDEM_BIKE
     }
+
+    class Map {
+        -int width
+        -int length
+        -List~Obstacle~ obstacles
+        -SortedSet~Activity~ activities
+
+        +getWidth() int
+        +getLength() int
+        +getObstacles() List~Obstacle~
+        +getActivities() SortedSet~Activity~
+        +addObstacle(int, int, int, int) void
+        +removeObstacle(int) void
+        +addActivity(Activity) void
+        +removeActivity(int) void
+        +isInObstacle(int, int) boolean
+        +isInActivity(int, int) boolean
+        +isInActivity(int, int, int) boolean
+    }
+
+    note for Map"invariants:
+        * width >= 1
+        * length >= 1
+        * obstacles != null
+        * activities != null
+        * loop: no entry is null in obstacles
+        * loop: no obstacle is out of boundaries
+        * loop: no entry is null in activities
+        * loop: no activity is out of boundaries
+        * activities and obstacles don't overlap"
+
+    Map --* Obstacle
+    Map --* Activity
     
     class Activity{
-        -Map map
+        -Gear gear
         -LocalDateTime start
         -LocalDateTime end
-        %% should have gear to start activity
-        -Gear gear
-        -Route route
+        -List~Integer~ coordinatesX
+        -List~Integer~ coordinatesY
+        -double avgSpeed
         
-        +startActivity() void
-        +getRoute() Route
-        +move(Direction, int) void
+        +getNumberOfSteps() int
+        +getCoordinateX(int) int
+        +getCoordinateY(int) int
+        +getStart() LocalDateTime
+        +getEnd() LocalDateTime
+        +getGear() Gear
+        +getAvgSpeed() double
         +endActivity() void
+        +move(Direction, int) void
+        +contains(int, int) boolean
     }
     
     note for Activity"invariants:
         * gear != null
-        * route != null
-    "
-        
-    class Route {
-        %% each entry must be >= 0
-        -ArrayList~Integer~ coordinatesX
-        %% each entry must be >= 0
-        -ArrayList~Integer~ coordinatesY
-        
-        +getCurrentX() int
-        +getCurrentY() int
-        +getDistance() int
-        +addCoordinate(int, int) void
-        +contains(int, int) boolean
-    }
-    
-    note for Route"invariants:
+        * start != null
         * coordinatesX != null
         * coordinatesX.size() >= 1
         * coordinatesY != null
         * coordinatesY.size() >= 1
-    "
-    
-    class Direction {
-        <<enumeration>>
-        NORTH,
-        SOUTH,
-        EAST,
-        WEST
-    }
-    
-    class Map {
-        -int width
-        -int length
-        -ArraySet~Obstacle~ obstacles
-        
-        +getObstacles() ArraySet~Obstacle~
-        +addObstacle(int, int, int, int)
-    }
-    
-    note for Map"invariants:
-        * width >= 1
-        * length >= 1
-        * obstacles != null"
+        * distance >= 0
+        * avgSpeed >= 0
+        * loop: all entries in coordinatesX are >= 0
+        * loop: all entries in coordinatesY are >= 0"
+
+    Activity --o Gear
     
     class Obstacle {
         -int upperLeftX
@@ -120,61 +161,70 @@ classDiagram
         +contains(int, int) void
     }
     
-    note for Obstacle"invariants
+    note for Obstacle"invariants:
         * upperLeftX >= 0
         * upperLeftY >= 0
         * lowerRightX > upperLeftX
-        * lowerRightY > upperLeftY
-    "
+        * lowerRightY > upperLeftY"
     
-    class GearPrinter {
-        -ArraySet~Gear~ gears
-        
-        +setGears(ArrayList~Gear~) void
-        +printGears() void
-    }
-    
-    note for GearPrinter"invariants
-        * gears != null
-    "
-    
-    class RoutePrinter {
-        -Map map
-        -ArrayList~Route~ routes
-        
-        +setRoutes(ArrayList~Route~) void
-        +printRoutes() void
-    }
-
-    note for RoutePrinter"invariants
-        * map != null
-        * routes != null
-    "
-    
-    class ObstaclePrinter {
-        -ArraySet~Obstacle~ obstacles
-        
-        +setObstacles(ArraySet~Obstacle~) void
-        +printObstacles() void
-    }
-
-    note for ObstaclePrinter"invariants
-        * obstacles != null
-    "
-    
-    %% class relationships
-    Exerciser --* Activity
-    Exerciser --* Gear
-    Activity --* Route
-    Map --* Obstacle
-    Gear --* GearType
-    
-    Activity --o Gear
-    Activity --o Map
-    GearPrinter --o Gear
-    RoutePrinter --o Route
-    RoutePrinter --o Map
-    ObstaclePrinter --o Obstacle
-
-    Route --> Direction
+%%    class ExerciserPrinter{
+%%        -Exerciser exerciser
+%%        
+%%        +print() void
+%%    }
+%%    
+%%    note for ExerciserPrinter"invariants:
+%%        * exerciser != null
+%%    "
+%%    
+%%    ExerciserPrinter --o Exerciser
+%%    
+%%    class GearPrinter {
+%%        -Gear gear
+%%        
+%%        +print() void
+%%    }
+%%    
+%%    note for GearPrinter"invariants:
+%%        * gear != null
+%%    "
+%%    
+%%    GearPrinter --o Gear
+%%
+%%    class MapPrinter {
+%%        -Map map
+%%        
+%%        printMap() void
+%%        printMap(int) void
+%%    }
+%%    
+%%    note for MapPrinter"invariants:
+%%        * map != null
+%%    "
+%%    
+%%    MapPrinter --o Map
+%%    
+%%    class ActivityPrinter {
+%%        -Activity activity
+%%        
+%%        print() void
+%%    }
+%%    
+%%    note for ActivityPrinter"invariants:
+%%        * activity != null
+%%    "
+%%
+%%    class ObstaclePrinter {
+%%        -Obstacle obstacle
+%%
+%%        +print() void
+%%    }
+%%
+%%    note for ObstaclePrinter"invariants:
+%%        * obstacles != null
+%%    "
+%%
+%%    ObstaclePrinter --o Obstacle
+%%    
+%%    ActivityPrinter --o Activity
 ```

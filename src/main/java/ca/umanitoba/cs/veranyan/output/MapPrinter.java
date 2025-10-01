@@ -1,51 +1,154 @@
 package ca.umanitoba.cs.veranyan.output;
 
+import ca.umanitoba.cs.veranyan.model.Activity;
 import ca.umanitoba.cs.veranyan.model.map.Map;
+import com.google.common.base.Preconditions;
 
-import java.sql.SQLOutput;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 
+/**
+ * The printer class for the {@link Map}
+ */
 public class MapPrinter {
+    // symbols to display on grid
     public static final String OBSTACLE = "*";
     public static final String EMPTY = ".";
     public static final String ROUTE = ">";
 
-    private final Map m;
+    private Map map;
 
-    public MapPrinter(final Map map){
-        if(map == null)
-            throw new IllegalArgumentException("Map instance required as a parameter. Received null.");
+    /**
+     * Constructor for MapPrinter.
+     * @param map the Map singleton to be printed. Must not be {@code null}.
+     */
+    public MapPrinter(Map map){
+        this.map = map;
 
-        this.m = map;
+        checkMapPrinter();
     }
 
     /**
-     * Prints the map grid, including obstacles
+     * Prints the Map and all its Activities. This method prints to standard output (`System.out`).
      */
-    public void printRoutes(){
-        for (int j = 1; j <= this.m.getLength(); j++){ // y-coordinates
-            for (int i = 1; i <= this.m.getWidth(); i++){ // x-coordinates
-                if(this.m.isInObstacle(i, j))
-                    System.out.print(OBSTACLE + " ");
-                else if(this.m.isInRoute(i, j)) // searches in all routes
-                    System.out.println(ROUTE + " ");
-                else System.out.println(EMPTY + " ");
+    public void print(){
+        System.out.println("Legend:");
+        System.out.printf("Grid layout: %dx%d.\n", map.getWidth(), map.getLength());
+        System.out.println("Obstacle coordinate: " + OBSTACLE);
+        System.out.println("Route coordinate: " + ROUTE);
+        System.out.println("Empty coordinate: " + EMPTY);
+
+        /*
+        calculating largest number of digits for both x- and y-coordinates
+        in order to use for indenting and proper output formatting.
+         */
+
+        int maxXLen;
+        if(map.getWidth() > 9)
+            maxXLen = (int) Math.log10(map.getWidth() - 1) + 1; // the number of digits in the largest x-coordinate
+        else{ // map width 1 crash prevention
+            maxXLen = 1;
+        }
+
+        int maxYLen;
+        if(map.getLength() > 9)
+            maxYLen = (int) Math.log10(map.getLength() - 1) + 1; // the number of digits in the largest y-coordinate
+        else { // map length 1 crash prevention
+            maxYLen = 1;
+        }
+
+        // printing x-coordinates
+        System.out.printf("%" + (maxYLen+1) + "s", ""); // indent for y-coordinate
+        for(int i = 0; i < map.getWidth(); i++)
+            System.out.printf(" %" + maxXLen + "d", i);
+        System.out.println();
+
+        for (int j = 0; j < map.getLength(); j++){ // y-coordinates
+            System.out.printf("%" + maxYLen + "d|", j); // printing the y-coordinate
+
+            for (int i = 0; i < map.getWidth(); i++){ // x-coordinates
+                if(map.isInObstacle(i, j)) // searches in all obstacles
+                    System.out.printf(" %" + maxXLen + "s", OBSTACLE);
+                else if(map.isInActivity(i, j)) // searches in all activities
+                    System.out.printf(" %" + maxXLen + "s", ROUTE);
+                else System.out.printf(" %" + maxXLen + "s", EMPTY);
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        // printing Activity distance summary
+        LocalDate instant = LocalDate.now();
+        LocalDate today = LocalDate.of(instant.getYear(), instant.getMonth(), instant.getDayOfMonth());
+        LocalDate firstDayOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate lastDayOfWeek = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        int totalNumSteps = 0;
+
+        for(var activity : map.getActivities()){
+            // if activity occurred this week
+            if(activity.getStart().isAfter(firstDayOfWeek.atStartOfDay()) &&
+                activity.getEnd().isBefore(lastDayOfWeek.atStartOfDay())){
+                totalNumSteps += activity.getNumberOfSteps();
+            }
+        }
+    }
+
+    /**
+     * Prints the Map and its Activity at index. This method prints to standard output (`System.out`).
+     * @param index the index of the Activity to be printed on the grid.
+     */
+    public void print(int index){
+        System.out.println("Legend:");
+        System.out.printf("Grid layout: %dx%d.\n", map.getWidth(), map.getLength());
+        System.out.println("Obstacle coordinate: " + OBSTACLE);
+        System.out.println("Route coordinate: " + ROUTE);
+        System.out.println("Empty coordinate: " + EMPTY);
+
+        /*
+        calculating largest number of digits for both x- and y-coordinates
+        in order to use for indenting and proper output formatting.
+         */
+
+        int maxXLen;
+        if(map.getWidth() > 9)
+            maxXLen = (int) Math.log10(map.getWidth() - 1) + 1; // the number of digits in the largest x-coordinate
+        else{ // map width 1 crash prevention
+            maxXLen = 1;
+        }
+
+        int maxYLen;
+        if(map.getLength() > 9)
+            maxYLen = (int) Math.log10(map.getLength() - 1) + 1; // the number of digits in the largest y-coordinate
+        else { // map length 1 crash prevention
+            maxYLen = 1;
+        }
+
+        // printing x-coordinates
+        System.out.printf("%" + (maxYLen+1) + "s", ""); // indent for y-coordinate
+        for(int i = 0; i < map.getWidth(); i++)
+            System.out.printf(" %" + maxXLen + "d", i);
+        System.out.println();
+
+        for (int j = 0; j < map.getLength(); j++){ // y-coordinates
+            System.out.printf("%" + maxYLen + "d|", j); // printing the y-coordinate
+
+            for (int i = 0; i < map.getWidth(); i++){ // x-coordinates
+                if(map.isInObstacle(i, j)) // searches in all obstacles
+                    System.out.printf(" %" + maxXLen + "s", OBSTACLE);
+                else if(map.isInActivity(index, i, j)) // searches in Activity at index
+                    System.out.printf(" %" + maxXLen + "s", ROUTE);
+                else System.out.printf(" %" + maxXLen + "s", EMPTY);
             }
             System.out.println();
         }
         System.out.println();
     }
 
-    public void printRoute(int index){
-        for (int j = 1; j <= this.m.getLength(); j++){ // y-coordinates
-            for (int i = 1; i <= this.m.getWidth(); i++){ // x-coordinates
-                if(this.m.isInObstacle(i, j))
-                    System.out.print(OBSTACLE + " ");
-                else if(this.m.isInRoute(index, i, j)) // searches in particular route
-                    System.out.println(ROUTE + " ");
-                else System.out.println(EMPTY + " ");
-            }
-            System.out.println();
-        }
-        System.out.println();
+    /**
+     * Ensures MapPrinter invariants are not violated.
+     */
+    private void checkMapPrinter(){
+        Preconditions.checkNotNull(map, "map cannot be null.");
     }
 }
