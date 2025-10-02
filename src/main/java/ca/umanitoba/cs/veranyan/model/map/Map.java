@@ -1,6 +1,7 @@
 package ca.umanitoba.cs.veranyan.model.map;
 
 import ca.umanitoba.cs.veranyan.model.Activity;
+import ca.umanitoba.cs.veranyan.model.Coordinate;
 import ca.umanitoba.cs.veranyan.model.gear.Gear;
 import com.google.common.base.Preconditions;
 
@@ -28,10 +29,8 @@ public class Map {
      */
     public static Map getInstance(int width, int length) {
         // create new singleton instance if none exists
-        if (singleton == null) {
+        if (singleton == null)
             singleton = new Map(width, length);
-            singleton.checkMap();
-        }
 
         return singleton;
     }
@@ -97,15 +96,20 @@ public class Map {
      * Adds an Obstacle to the Map instance.
      * Obstacle must not be out of Map instance boundaries.
      *
-     * @param upperLeftX a non-negative integer indicating the upper-left x-coordinate of rectangular Obstacle. Must be less than Map width
-     * @param upperLeftY a non-negative integer indicating the upper-left x-coordinate of rectangular Obstacle. Must be less than Map length
-     * @param lowerRightX a non-negative integer indicating the lower-right x-coordinate of rectangular Obstacle.
-     *                    Must be less than Map width, greater than or equal to upperLeftX.
-     * @param lowerRightY a non-negative integer indicating the lower-right y-coordinate of rectangular Obstacle.
-     *                    Must be less than Map length, greater than or equal to upperLeftY.
+     * @param topLeftX a non-negative integer indicating the upper-left x-coordinate of rectangular Obstacle. Must be less than Map width
+     * @param topLeftY a non-negative integer indicating the upper-left y-coordinate of rectangular Obstacle. Must be less than Map length
+     * @param bottomRightX a non-negative integer indicating the lower-right x-coordinate of rectangular Obstacle.
+     *                    Must be less than Map width, greater than or equal to topLeftX.
+     * @param bottomRightY a non-negative integer indicating the lower-right y-coordinate of rectangular Obstacle.
+     *                    Must be less than Map length, greater than or equal to topLeftY.
      */
-    public void addObstacle(int upperLeftX, int upperLeftY, int lowerRightX, int lowerRightY) {
-        obstacles.add(new Obstacle(upperLeftX, upperLeftY, lowerRightX, lowerRightY));
+    public void addObstacle(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY) {
+        checkMap();
+
+        obstacles.add(new Obstacle(
+                new Coordinate(topLeftX, topLeftY),
+                new Coordinate(bottomRightX, bottomRightY)
+        ));
 
         checkMap();
     }
@@ -127,6 +131,8 @@ public class Map {
      * @param activity the activity instance to add to Map.
      */
     public void addActivity(Activity activity){
+        checkMap();
+
         activities.add(activity);
 
         checkMap();
@@ -208,30 +214,32 @@ public class Map {
         Preconditions.checkNotNull(activities, "activities cannot be null.");
 
         // checks obstacle not null and is within bounds
-        for(Obstacle Obstacle : obstacles){
-            Preconditions.checkNotNull(Obstacle, "obstacles entries cannot be null.");
-            Preconditions.checkState(Obstacle.lowerRightX() < width,
+        for(Obstacle obstacle : obstacles){
+            Preconditions.checkNotNull(obstacle, "obstacles entries cannot be null.");
+            Preconditions.checkState(obstacle.bottomRightCoord().x() < width,
                     "Obstacle width cannot be out of bounds.");
-            Preconditions.checkState(Obstacle.lowerRightY() < length,
+            Preconditions.checkState(obstacle.bottomRightCoord().y() < length,
                     "Obstacle length cannot be out of bounds.");
         }
 
         // checks activity not null and is within bounds
         for(Activity activity : activities){
             Preconditions.checkNotNull(activity, "activities entries cannot be null.");
-            for(int i = 0; i < activity.getNumberOfSteps(); i++){
-                Preconditions.checkState(activity.getCoordinateX(i) < width,
+            for(int i = 0; i < activity.getStepsAmount(); i++){
+                Preconditions.checkState(activity.getCoordinate(i).x() < width,
                         "activity entry cannot be out of bounds.");
-                Preconditions.checkState(activity.getCoordinateY(i) < length,
+                Preconditions.checkState(activity.getCoordinate(i).y() < length,
                         "activity entry cannot be out of bounds.");
             }
         }
 
         // checking for obstacles and activities not overlapping, coordinates within bounds
-        for(int i = 0; i < width; i++){ // x-coordinate
-            for(int j = 0; j < width; j++) {// y-coordinate
-                Preconditions.checkState(!(isInActivity(i, j) && isInObstacle(i, j)),
-                        String.format("Activity route cannot pass through an Obstacle at (%d, %d).", i, j));
+        for(int x = 0; x < width; x++){ // x-coordinate
+            for(int y = 0; y < length; y++) {// y-coordinate
+
+                // it's not the case that (x, y) is both in an activity and an obstacle
+                Preconditions.checkState(!(isInActivity(x, y) && isInObstacle(x, y)),
+                        String.format("Activity route cannot pass through an Obstacle at (%d, %d).", x, y));
             }
         }
     }

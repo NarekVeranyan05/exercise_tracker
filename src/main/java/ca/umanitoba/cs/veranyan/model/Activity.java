@@ -19,8 +19,7 @@ public class Activity {
     private final Gear gear;
     private final LocalDateTime start;
     private LocalDateTime end; // activity end is initialised with null until ended explicitly using endActivity()
-    private final List<Integer> coordinatesX;
-    private final List<Integer> coordinatesY;
+    private final List<Coordinate> coordinates;
     private double avgSpeed; // value determined at activity end
 
     /**
@@ -32,10 +31,8 @@ public class Activity {
     public Activity(Gear gear, int x, int y) {
         this.gear = gear;
         this.start = LocalDateTime.now(); // end not initialised
-        this.coordinatesX = new ArrayList<>();
-        this.coordinatesX.add(x);
-        this.coordinatesY = new ArrayList<>();
-        this.coordinatesY.add(y);
+        this.coordinates = new ArrayList<>();
+        this.coordinates.add(new Coordinate(x, y));
         this.avgSpeed = 0;
 
         checkActivity();
@@ -46,26 +43,28 @@ public class Activity {
      *
      * @return the number of steps for the activity.
      */
-    public int getNumberOfSteps(){
-        return coordinatesX.size();
+    public int getStepsAmount(){
+        return coordinates.size();
     }
 
     /**
-     * Gets the x-coordinate of a point at a particular index in route.
-     * @param index the index of the point; represents the point of the index-th step.
-     * @return the x-coordinate of the point.
+     * Note: getAvgSpeed() can be called only when Activity has been ended using endActivity()
+     * @return the average speed (meters per second) throughout the Activity.
      */
-    public int getCoordinateX(int index) {
-        return coordinatesX.get(index);
+    public double getAvgSpeed() {
+        // average speed is determined only after the activity is finished.
+        Preconditions.checkNotNull(end, "end cannot be null");
+
+        return avgSpeed;
     }
 
     /**
-     * Gets the y-coordinate of a point at a particular index in route.
+     * Gets the Coordinate of a point at a particular index in route.
      * @param index the index of the point; represents the point of the index-th step.
-     * @return the y-coordinate of the point.
+     * @return the Coordinate of the point.
      */
-    public int getCoordinateY(int index) {
-        return coordinatesY.get(index);
+    public Coordinate getCoordinate(int index) {
+        return coordinates.get(index);
     }
 
     /**
@@ -90,23 +89,14 @@ public class Activity {
     }
 
     /**
-     * Note: getAvgSpeed() can be called only when Activity has been ended using endActivity()
-     * @return the average speed (meters per second) throughout the Activity.
-     */
-    public double getAvgSpeed() {
-        // average speed is determined only after the activity is finished.
-        Preconditions.checkNotNull(end, "end cannot be null");
-
-        return avgSpeed;
-    }
-
-    /**
      * Ends the Activity. Activity route cannot be modified after end.
      */
     public void endActivity(){
+        checkActivity();
+
         if(end == null) {
             end = LocalDateTime.now();
-            avgSpeed = (getNumberOfSteps() * METERS_PER_STEP) /
+            avgSpeed = (getStepsAmount() * METERS_PER_STEP) /
                     ((double) Duration.between(start, end).getSeconds());
         }
 
@@ -119,35 +109,37 @@ public class Activity {
      * @param steps the number of steps of the move. Must be non-negative.
      */
     public void move(int direction, int steps){
-        Preconditions.checkState(direction >= 1 && direction <= 4, "There are only 4 directions.");
-        Preconditions.checkState(steps > 0, "Number of steps cannot be negative.");
+        checkActivity();
 
-        int currX = coordinatesX.get(coordinatesX.size()-1); // current position x-coordinate
-        int currY = coordinatesY.get(coordinatesY.size()-1); // current position y-coordinate
+        var currCoordinate = coordinates.get(coordinates.size()-1); // the current (x, y) coordinate
 
         switch(direction){
             case 1: // move up
-                for(int i = 1; i <= steps; i++){
-                    coordinatesX.add(currX);
-                    coordinatesY.add(currY - i);
+                for(int i = 1; i <= steps; i++) {
+                    coordinates.add(new Coordinate(
+                            currCoordinate.x(), currCoordinate.y() - i
+                    ));
                 }
                 break;
             case 2: // move right
                 for(int i = 1; i <= steps; i++){
-                    coordinatesX.add(currX + i);
-                    coordinatesY.add(currY);
+                    coordinates.add(new Coordinate(
+                           currCoordinate.x() + i, currCoordinate.y()
+                    ));
                 }
                 break;
             case 3: // move down
                 for(int i = 1; i <= steps; i++){
-                    coordinatesX.add(currX);
-                    coordinatesY.add(currY + i);
+                    coordinates.add(new Coordinate(
+                            currCoordinate.x(), currCoordinate.y() + i
+                    ));
                 }
                 break;
             case 4: // move left
                 for(int i = 1; i <= steps; i++){
-                    coordinatesX.add(currX - i);
-                    coordinatesY.add(currY);
+                    coordinates.add(new Coordinate(
+                            currCoordinate.x() - i, currCoordinate.y()
+                    ));
                 }
                 break;
         }
@@ -162,10 +154,14 @@ public class Activity {
      * @return true if (x, y) is in the Activity's route; false otherwise.
      */
     public boolean contains(int x, int y){
+        checkActivity();
+
         boolean contains = false;
 
-        for(int i = 0; i < coordinatesX.size() && !contains; i++)
-            contains = (x == coordinatesX.get(i)) && (y == coordinatesY.get(i));
+        for(int i = 0; i < coordinates.size() && !contains; i++)
+            contains = (x == coordinates.get(i).x()) && (y == coordinates.get(i).y());
+
+        checkActivity();
 
         return contains;
     }
@@ -174,20 +170,13 @@ public class Activity {
      * Ensures Activity invariants are not violated.
      */
     private void checkActivity(){
-        Preconditions.checkNotNull(gear, "gear cannot be null");
-        Preconditions.checkNotNull(start, "start cannot be null");
-        Preconditions.checkNotNull(coordinatesX, "coordinatesX cannot be null");
-        Preconditions.checkState(!coordinatesX.isEmpty(), "coordinatesX cannot be empty");
-        Preconditions.checkNotNull(coordinatesY, "coordinatesY cannot be null");
-        Preconditions.checkState(!coordinatesY.isEmpty(), "coordinatesY cannot be empty");
-        Preconditions.checkState(avgSpeed >= 0, "avgSpeed cannot be negative");
+        Preconditions.checkNotNull(gear, "gear cannot be null.");
+        Preconditions.checkNotNull(start, "start cannot be null.");
+        Preconditions.checkNotNull(coordinates, "coordinates cannot be null.");
+        Preconditions.checkState(!coordinates.isEmpty(), "coordinates cannot be empty.");
+        Preconditions.checkState(avgSpeed >= 0, "avgSpeed cannot be negative.");
 
-        // all x-coordinates and y-coordinates are >= 0
-        for(int x : coordinatesX)
-            Preconditions.checkState(x >= 0, "x-coordinate cannot be negative");
-        for(int y: coordinatesY)
-            Preconditions.checkState(y >= 0, "y-coordinate cannot be negative");
-
+        // Coordinate will ensure coordinates are non-negative
         // Map will ensure Activity route is within boundaries
     }
 }

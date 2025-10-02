@@ -25,9 +25,11 @@ public class ActivityPrinter {
      * Prints out an Activity. This method prints to standard output (`System.out`).
      */
     public void print() {
+        checkActivityPrinter();
+
         System.out.print("Activity start = " + activity.getStart() +
                 " | end = " + activity.getEnd() + " | distance passed = " +
-                (activity.getNumberOfSteps() * METERS_PER_STEP) + " meters | average speed = " +
+                (activity.getStepsAmount() * METERS_PER_STEP) + " meters | average speed = " +
                 activity.getAvgSpeed() + " meters per second.\n");
 
         // gear info
@@ -35,6 +37,8 @@ public class ActivityPrinter {
             System.out.print("Gear used: ");
             new GearPrinter(activity.getGear()).print();
         }
+
+        checkActivityPrinter();
     }
 
     /**

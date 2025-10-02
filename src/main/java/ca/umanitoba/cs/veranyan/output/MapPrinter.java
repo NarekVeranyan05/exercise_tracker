@@ -17,7 +17,7 @@ public class MapPrinter {
     public static final String EMPTY = ".";
     public static final String ROUTE = ">";
 
-    private Map map;
+    private final Map map;
 
     /**
      * Constructor for MapPrinter.
@@ -33,6 +33,8 @@ public class MapPrinter {
      * Prints the Map and all its Activities. This method prints to standard output (`System.out`).
      */
     public void print(){
+        checkMapPrinter();
+
         System.out.println("Legend:");
         System.out.printf("Grid layout: %dx%d.\n", map.getWidth(), map.getLength());
         System.out.println("Obstacle coordinate: " + OBSTACLE);
@@ -64,13 +66,13 @@ public class MapPrinter {
             System.out.printf(" %" + maxXLen + "d", i);
         System.out.println();
 
-        for (int j = 0; j < map.getLength(); j++){ // y-coordinates
-            System.out.printf("%" + maxYLen + "d|", j); // printing the y-coordinate
+        for (int y = 0; y < map.getLength(); y++){ // y-coordinates
+            System.out.printf("%" + maxYLen + "d|", y); // printing the y-coordinate
 
-            for (int i = 0; i < map.getWidth(); i++){ // x-coordinates
-                if(map.isInObstacle(i, j)) // searches in all obstacles
+            for (int x = 0; x < map.getWidth(); x++){ // x-coordinates
+                if(map.isInObstacle(x, y)) // searches in all obstacles
                     System.out.printf(" %" + maxXLen + "s", OBSTACLE);
-                else if(map.isInActivity(i, j)) // searches in all activities
+                else if(map.isInActivity(x, y)) // searches in all activities
                     System.out.printf(" %" + maxXLen + "s", ROUTE);
                 else System.out.printf(" %" + maxXLen + "s", EMPTY);
             }
@@ -89,7 +91,7 @@ public class MapPrinter {
             // if activity occurred this week
             if(activity.getStart().isAfter(firstDayOfWeek.atStartOfDay()) &&
                 activity.getEnd().isBefore(lastDayOfWeek.atStartOfDay())){
-                totalNumSteps += activity.getNumberOfSteps();
+                totalNumSteps += activity.getStepsAmount();
             }
         }
     }
@@ -143,6 +145,8 @@ public class MapPrinter {
             System.out.println();
         }
         System.out.println();
+
+        checkMapPrinter();
     }
 
     /**

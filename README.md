@@ -99,9 +99,7 @@ classDiagram
         +removeObstacle(int) void
         +addActivity(Activity) void
         +removeActivity(int) void
-        +isInObstacle(int, int) boolean
-        +isInActivity(int, int) boolean
-        +isInActivity(int, int, int) boolean
+        +isInFeature(MapFeatureType type, int, int) boolean
     }
 
     note for Map"invariants:
@@ -122,17 +120,15 @@ classDiagram
         -Gear gear
         -LocalDateTime start
         -LocalDateTime end
-        -List~Integer~ coordinatesX
-        -List~Integer~ coordinatesY
+        -List~Coordinate~ coordinates
         -double avgSpeed
         
-        +getNumberOfSteps() int
-        +getCoordinateX(int) int
-        +getCoordinateY(int) int
+        +getStepsAmount() int
+        +getAvgSpeed() double
+        +getCoordinate(int) Coordinate
         +getStart() LocalDateTime
         +getEnd() LocalDateTime
         +getGear() Gear
-        +getAvgSpeed() double
         +endActivity() void
         +move(Direction, int) void
         +contains(int, int) boolean
@@ -141,24 +137,18 @@ classDiagram
     note for Activity"invariants:
         * gear != null
         * start != null
-        * coordinatesX != null
-        * coordinatesX.size() >= 1
-        * coordinatesY != null
-        * coordinatesY.size() >= 1
-        * distance >= 0
-        * avgSpeed >= 0
-        * loop: all entries in coordinatesX are >= 0
-        * loop: all entries in coordinatesY are >= 0"
+        * coordinates != null
+        * coordinates.size() >= 1
+        * avgSpeed >= 0"
 
     Activity --o Gear
+    Activity --* Coordinate
     
     class Obstacle {
-        -int upperLeftX
-        -int upperLeftY
-        -int lowerRightX
-        -int lowerRightY
+        -Coordinate topLeftCoord
+        -Coordinate bottomRightCoord
         
-        +contains(int, int) void
+        +contains(int, int) boolean
     }
     
     note for Obstacle"invariants:
@@ -166,6 +156,21 @@ classDiagram
         * upperLeftY >= 0
         * lowerRightX > upperLeftX
         * lowerRightY > upperLeftY"
+    
+    Obstacle --* Coordinate
+        
+    class Coordinate {
+        -int x
+        -int y
+        
+        +getX() int
+        +getY() int
+    }
+    
+    note for Coordinate "invariants:
+        * x >= 0
+        * y >= 0
+    "
     
 %%    class ExerciserPrinter{
 %%        -Exerciser exerciser

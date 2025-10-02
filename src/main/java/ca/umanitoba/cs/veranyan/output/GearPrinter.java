@@ -24,8 +24,12 @@ public class GearPrinter {
      * Prints out a Gear. This method prints to standard output (`System.out`).
      */
     public void print(){
+        checkGearPrinter();
+
         System.out.print("Gear " + gear.name() + " of type "  + gear.type() +
                 " | average speed = " + gear.avgSpeed() + " meters per second.");
+
+        checkGearPrinter();
     }
 
     /**

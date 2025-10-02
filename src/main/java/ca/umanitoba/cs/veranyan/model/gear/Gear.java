@@ -1,6 +1,5 @@
 package ca.umanitoba.cs.veranyan.model.gear;
 
-
 import com.google.common.base.Preconditions;
 
 /**
