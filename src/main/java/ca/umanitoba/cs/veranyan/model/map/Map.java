@@ -1,5 +1,6 @@
 package ca.umanitoba.cs.veranyan.model.map;
 
+import ca.umanitoba.cs.veranyan.assets.MapFeatureType;
 import ca.umanitoba.cs.veranyan.model.Activity;
 import ca.umanitoba.cs.veranyan.model.Coordinate;
 import ca.umanitoba.cs.veranyan.model.gear.Gear;
@@ -9,7 +10,7 @@ import java.util.*;
 
 /**
  * The Map is the class that contains all the {@link Obstacle}
- * instances and {@link Activity} instances (and their routes).
+ * instances and {@link Route}.
  */
 public class Map {
     private static Map singleton;
@@ -17,7 +18,7 @@ public class Map {
     private final int width; // should be > 0
     private final int length; // should be > 0
     private final List<Obstacle> obstacles;
-    private final SortedSet<Activity> activities;
+    private final List<Route> routes;
 
     /**
      * The width and length will be used to instantiate a new Map
@@ -51,15 +52,7 @@ public class Map {
         this.width = width;
         this.length = length;
         this.obstacles = new ArrayList<>();
-
-        // activities should not have duplicates.
-        // activities are put in ascending order in the Set.
-        this.activities = new TreeSet<>(new Comparator<Activity>() {
-            @Override
-            public int compare(Activity o1, Activity o2) {
-                return o1.getStart().compareTo(o2.getStart());
-            }
-        });
+        this.routes = new ArrayList<>();
 
         checkMap();
     }
@@ -82,14 +75,18 @@ public class Map {
      * @return the unmodifiable list of Obstacles on the Map
      */
     public List<Obstacle> getObstacles() {
+        checkMap();
+        
         return Collections.unmodifiableList(obstacles);
     }
 
     /**
      * @return the unmodifiable list of activities on the Map
      */
-    public SortedSet<Activity> getActivities() {
-        return Collections.unmodifiableSortedSet(activities);
+    public List<Route> getRoutes() {
+        checkMap();
+
+        return Collections.unmodifiableList(routes);
     }
 
     /**
@@ -127,42 +124,38 @@ public class Map {
     }
 
     /**
-     * Adds an activity to the Map instance.
-     * @param activity the activity instance to add to Map.
+     * Adds a Route to the Map instance.
+     * Route must not be out of Map instance boundaries.
+     * @param route the Route instance to be added.
      */
-    public void addActivity(Activity activity){
+    public void addRoute(Route route) {
         checkMap();
 
-        activities.add(activity);
+        routes.add(route);
 
         checkMap();
     }
 
     /**
-     * Removes an activity from the Map.
-     * @param index the index of the activity to remove
+     * Removes a Route from the Map.
+     * @param route the Route to remove.
      */
-    public void removeActivity(int index){
+    public void removeRoute(Route route){
         checkMap();
 
-        Iterator<Activity> iterator = this.activities.iterator();
-        for(int j = 0; j < index; j++)
-            iterator.next();
-
-        this.activities.remove(iterator.next());
+        routes.remove(route);
 
         checkMap();
     }
 
     /**
-     * Determines whether a point on Map is within any of the Obstacles.
+     * Determines whether a point on Map is within any of the Obstacle.
      * @param x the x-coordinate of the point on the Map.
      * @param y the y-coordinate of the point on the Map.
      * @return true if (x, y) is in any Obstacle on the Map; false otherwise.
      */
     public boolean isInObstacle(int x, int y) {
         boolean isInObstacle = false;
-
         // going over all the obstacles
         for(int i = 0; i < obstacles.size() && !isInObstacle; i++)
             isInObstacle = obstacles.get(i).contains(x, y);
@@ -171,37 +164,29 @@ public class Map {
     }
 
     /**
-     * Determines whether a point on Map is within any of the Activities' routes.
+     * Determines whether a point on Map is within any of the Routes.
      * @param x the x-coordinate of the point on the Map.
      * @param y the y-coordinate of the point on the Map.
-     * @return true if (x, y) is in Activity's route on the Map; false otherwise.
+     * @return true if (x, y) is in Route on the Map; false otherwise.
      */
-    public boolean isInActivity(int x, int y){
-        boolean isInActivity = false;
-        Iterator<Activity> activityIterator = activities.iterator();
+    public boolean isInRoute(int x, int y){
+        boolean isInRoute = false;
 
-        // going over all the activities
-        while(activityIterator.hasNext() && !isInActivity)
-            isInActivity = activityIterator.next().contains(x, y);
+        for(int i = 0; i < routes.size() && !isInRoute; i++)
+            isInRoute = routes.get(i).contains(x, y);
 
-        return isInActivity;
+        return isInRoute;
     }
 
     /**
-     * Determines whether a point on Map is within a particular Activity's route.
+     * Determines whether a point on Map is within a particular Route.
      * @param index the index of the Activity to search in.
      * @param x the x-coordinate of the point on the Map.
      * @param y the x-coordinate of the point on the Map.
-     * @return true if (x, y) is in Activity's route on the Map; false otherwise.
+     * @return true if (x, y) is in Route on the Map; false otherwise.
      */
-    public boolean isInActivity(int index, int x, int y){
-        Iterator<Activity> activityIterator = activities.iterator();
-
-        // omitting previous entries
-        for(int i = 0; i < index; i++)
-            activityIterator.next();
-
-        return activityIterator.next().contains(x, y);
+    public boolean isInRoute(int index, int x, int y){
+        return routes.get(index).contains(x, y);
     }
 
     /**
@@ -211,10 +196,10 @@ public class Map {
         Preconditions.checkState(width >= 1, "width cannot be negative or 0.");
         Preconditions.checkState(length >= 1, "length cannot be negative or 0.");
         Preconditions.checkNotNull(obstacles, "obstacles cannot be null.");
-        Preconditions.checkNotNull(activities, "activities cannot be null.");
+        Preconditions.checkNotNull(routes, "routes cannot be null.");
 
         // checks obstacle not null and is within bounds
-        for(Obstacle obstacle : obstacles){
+        for(var obstacle : obstacles){
             Preconditions.checkNotNull(obstacle, "obstacles entries cannot be null.");
             Preconditions.checkState(obstacle.bottomRightCoord().x() < width,
                     "Obstacle width cannot be out of bounds.");
@@ -223,13 +208,13 @@ public class Map {
         }
 
         // checks activity not null and is within bounds
-        for(Activity activity : activities){
-            Preconditions.checkNotNull(activity, "activities entries cannot be null.");
-            for(int i = 0; i < activity.getStepsAmount(); i++){
-                Preconditions.checkState(activity.getCoordinate(i).x() < width,
-                        "activity entry cannot be out of bounds.");
-                Preconditions.checkState(activity.getCoordinate(i).y() < length,
-                        "activity entry cannot be out of bounds.");
+        for(var route : routes){
+            Preconditions.checkNotNull(route, "routes entries cannot be null.");
+            for(int i = 0; i < route.getStepsAmount(); i++){
+                Preconditions.checkState(route.getCoordinate(i).x() < width,
+                        "route entry cannot be out of bounds.");
+                Preconditions.checkState(route.getCoordinate(i).y() < length,
+                        "route entry cannot be out of bounds.");
             }
         }
 
@@ -238,8 +223,8 @@ public class Map {
             for(int y = 0; y < length; y++) {// y-coordinate
 
                 // it's not the case that (x, y) is both in an activity and an obstacle
-                Preconditions.checkState(!(isInActivity(x, y) && isInObstacle(x, y)),
-                        String.format("Activity route cannot pass through an Obstacle at (%d, %d).", x, y));
+                Preconditions.checkState(!(isInRoute(x, y) && isInObstacle(x, y)),
+                        String.format("Route cannot pass through an Obstacle at (%d, %d).", x, y));
             }
         }
     }

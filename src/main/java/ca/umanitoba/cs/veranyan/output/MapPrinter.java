@@ -72,28 +72,13 @@ public class MapPrinter {
             for (int x = 0; x < map.getWidth(); x++){ // x-coordinates
                 if(map.isInObstacle(x, y)) // searches in all obstacles
                     System.out.printf(" %" + maxXLen + "s", OBSTACLE);
-                else if(map.isInActivity(x, y)) // searches in all activities
+                else if(map.isInRoute(x, y)) // searches in all activities
                     System.out.printf(" %" + maxXLen + "s", ROUTE);
                 else System.out.printf(" %" + maxXLen + "s", EMPTY);
             }
             System.out.println();
         }
         System.out.println();
-
-        // printing Activity distance summary
-        LocalDate instant = LocalDate.now();
-        LocalDate today = LocalDate.of(instant.getYear(), instant.getMonth(), instant.getDayOfMonth());
-        LocalDate firstDayOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate lastDayOfWeek = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-        int totalNumSteps = 0;
-
-        for(var activity : map.getActivities()){
-            // if activity occurred this week
-            if(activity.getStart().isAfter(firstDayOfWeek.atStartOfDay()) &&
-                activity.getEnd().isBefore(lastDayOfWeek.atStartOfDay())){
-                totalNumSteps += activity.getStepsAmount();
-            }
-        }
     }
 
     /**
@@ -138,7 +123,7 @@ public class MapPrinter {
             for (int i = 0; i < map.getWidth(); i++){ // x-coordinates
                 if(map.isInObstacle(i, j)) // searches in all obstacles
                     System.out.printf(" %" + maxXLen + "s", OBSTACLE);
-                else if(map.isInActivity(index, i, j)) // searches in Activity at index
+                else if(map.isInRoute(index, i, j)) // searches in Activity at index
                     System.out.printf(" %" + maxXLen + "s", ROUTE);
                 else System.out.printf(" %" + maxXLen + "s", EMPTY);
             }

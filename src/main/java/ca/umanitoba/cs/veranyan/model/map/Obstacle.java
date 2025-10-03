@@ -9,7 +9,7 @@ import com.google.common.base.Preconditions;
  * @param topLeftCoord the Coordinate of the top-left vertex of the obstacle.
  * @param bottomRightCoord the Coordinate of the bottom-right vertex of the obstacle.
  */
-public record Obstacle(Coordinate topLeftCoord, Coordinate bottomRightCoord) {
+public record Obstacle(Coordinate topLeftCoord, Coordinate bottomRightCoord){
     public Obstacle {
         // validating record arguments as preconditions before field initialisation.
         Preconditions.checkNotNull(topLeftCoord, "coordinate cannot be null.");

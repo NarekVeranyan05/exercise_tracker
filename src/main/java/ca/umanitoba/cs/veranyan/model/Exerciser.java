@@ -5,17 +5,22 @@ import ca.umanitoba.cs.veranyan.model.gear.GearType;
 import ca.umanitoba.cs.veranyan.model.map.Map;
 import com.google.common.base.Preconditions;
 
-import java.util.*;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.Iterator;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * The Exerciser is the class representing the user of this
- * application. It contains the {@link Map} and all the {@link Gear}
+ * application. It contains the {@link Map}, all the {@link Gear}
  * instances that the user has purchased to later choose from and to
- * a particular activity.
+ * a particular activity, and the {@link Activity} instances.
  */
 public class Exerciser {
     private Map map; // map singleton
     private final SortedSet<Gear> gears;
+    private final SortedSet<Activity> activities;
 
     /**
      * Constructor for Exerciser.
@@ -33,10 +38,47 @@ public class Exerciser {
             }
         });
 
+        // activities should not have duplicates.
+        // activities are put in ascending order in the Set.
+        this.activities = new TreeSet<>(new Comparator<Activity>() {
+            @Override
+            public int compare(Activity o1, Activity o2) {
+                return o1.getStart().compareTo(o2.getStart());
+            }
+        });
+
         // adding new Gear instance
         this.gears.add(new Gear(type, name, avgSpeed));
 
         checkExerciser();
+    }
+
+    /**
+     * @return the Map singleton added to the system. Or null if no map added.
+     */
+    public Map getMap() {
+        return map;
+    }
+
+    /**
+     * Adds a new Map to the system.
+     * @param map the Map singleton to add (must not be {@code null})
+     */
+    public void addMap(Map map){
+        Preconditions.checkNotNull(map, "map cannot be null.");
+        Preconditions.checkState(this.map == null, "previous map was not removed.");
+        checkExerciser();
+
+        this.map = map;
+
+        checkExerciser();
+    }
+
+    /**
+     * Removes the Map from the system.
+     */
+    public void removeMap(){
+        map = null;
     }
 
     /**
@@ -66,7 +108,9 @@ public class Exerciser {
      * @param avgSpeed the average speed of the initial Gear to be added to Exerciser. Must be positive.
      */
     public void addGear(GearType type, String name, double avgSpeed){
-        this.gears.add(new Gear(type, name, avgSpeed));
+        checkExerciser();
+
+        gears.add(new Gear(type, name, avgSpeed));
 
         checkExerciser();
     }
@@ -79,45 +123,78 @@ public class Exerciser {
     public void removeGear(int index){
         checkExerciser();
 
-        Iterator<Gear> iterator = this.gears.iterator();
+        Iterator<Gear> iterator = gears.iterator();
         for(int j = 0; j < index; j++)
             iterator.next();
 
-        this.gears.remove(iterator.next());
+        gears.remove(iterator.next());
 
         checkExerciser();
     }
 
-    public Map getMap() {
-        return map;
+    /**
+     * @return the unmodifiable list of activities on the Map
+     */
+    public SortedSet<Activity> getActivities() {
+        return Collections.unmodifiableSortedSet(activities);
     }
 
     /**
-     * Adds a new Map to the system.
-     * @param map the Map singleton to add (must not be {@code null})
+     * @param index the index of the Activity.
+     * @return the Activity at the given index.
      */
-    public void addMap(Map map){
-        Preconditions.checkNotNull(map, "map cannot be null.");
-        this.map = map;
+    public Activity getActivity(int index){
+        Iterator<Activity> activityIterator = activities.iterator();
+
+        for(int i = 0; i < index; i++)
+            activityIterator.next();
+
+        return activityIterator.next();
     }
 
     /**
-     * Removes the Map from the system.
+     * Adds an activity to the Map instance.
+     * @param activity the activity instance to add to Map.
      */
-    public void removeMap(){
-        this.map = null;
+    public void addActivity(Activity activity){
+        checkExerciser();
+
+        activities.add(activity);
+
+        checkExerciser();
+    }
+
+    /**
+     * Removes an activity from the Map.
+     * @param index the index of the activity to remove
+     */
+    public void removeActivity(int index){
+        checkExerciser();
+
+        Iterator<Activity> iterator = activities.iterator();
+        for(int j = 0; j < index; j++)
+            iterator.next();
+
+        activities.remove(iterator.next());
+
+        checkExerciser();
     }
 
     /**
      * Ensures Exerciser invariants are not violated.
      */
     private void checkExerciser(){
-        Preconditions.checkNotNull(this.gears, "gears cannot be null");
-        Preconditions.checkState(!this.gears.isEmpty(), "gears should have at least one entry");
+        Preconditions.checkNotNull(gears, "gears cannot be null.");
+        Preconditions.checkState(!gears.isEmpty(), "gears should have at least one entry.");
+        Preconditions.checkNotNull(activities, "activities cannot be null.");
 
         // Gear cannot be null
-        for (Gear gear : this.gears)
-            Preconditions.checkNotNull(gear, "gears entry cannot be null");
+        for (var gear : gears)
+            Preconditions.checkNotNull(gear, "gears entry cannot be null.");
+
+        // Activity cannot be null
+        for (var activity : activities)
+            Preconditions.checkNotNull(activity, "activities entry cannot be null.");
     }
 
 }

@@ -6,6 +6,7 @@ import ca.umanitoba.cs.veranyan.model.gear.Gear;
 import ca.umanitoba.cs.veranyan.model.gear.GearType;
 import ca.umanitoba.cs.veranyan.model.map.Map;
 import ca.umanitoba.cs.veranyan.model.map.Obstacle;
+import ca.umanitoba.cs.veranyan.model.map.Route;
 import ca.umanitoba.cs.veranyan.output.ActivityPrinter;
 import ca.umanitoba.cs.veranyan.output.GearPrinter;
 import ca.umanitoba.cs.veranyan.output.MapPrinter;
@@ -171,8 +172,9 @@ public class Main{
             int x = promptInt("Enter starting point x-coordinate");
             int y = promptInt("Enter starting point y-coordinate");
 
-            Activity activity = new Activity(exerciser.getGear(gearNumber-1), x, y);
-            exerciser.getMap().addActivity(activity);
+            Route route = new Route(x, y);
+            Activity activity = new Activity(exerciser.getGear(gearNumber-1), route);
+            exerciser.getMap().addRoute(route);
 
             int makeStep = promptInt("Enter 1 to move or -1 to end activity");
             while(makeStep != -1) {
@@ -185,16 +187,14 @@ public class Main{
                 System.out.println("---Activity route must be within map boundaries---");
                 int directionNumber = promptInt("Enter selected direction number (must be from 1 to 4 inclusive)");
                 int numberOfSteps = promptInt("Enter number of steps (must be non-negative)");
-                activity.move(directionNumber, numberOfSteps);
+                route.move(directionNumber, numberOfSteps);
 
                 showMap();
                 makeStep = promptInt("Enter 1 to move or -1 to end activity");
             }
             activity.endActivity();
         }
-        else if (exerciser == null)
-            System.out.println("No gear to add to an activity. Add gear first.");
-        else System.out.println("There is no map added to the system. Add a map first in order to add obstacles.");
+        else System.out.println("There is no map added to the system. Add a map first in order to add activities.");
     }
 
     /**
@@ -242,11 +242,9 @@ public class Main{
      * Displays activities. Prints out to standard output stream (System.out)
      */
     private static void showActivities() {
-        Map map = exerciser.getMap();
-
-        if(map != null && !map.getActivities().isEmpty()){
+        if(!exerciser.getActivities().isEmpty()){
             int i = 1;
-            for(Activity activity : map.getActivities()){
+            for(Activity activity : exerciser.getActivities()){
                 System.out.print(i + ". ");
                 new ActivityPrinter(activity).print();
                 System.out.println();
@@ -257,15 +255,16 @@ public class Main{
     }
 
     private static void showActivity() {
-        Map map = exerciser.getMap();
-
-        if(map != null && !map.getActivities().isEmpty()){
-            showActivities();
-            int activityNumber = promptInt("Enter selected activity number");
-
-            new MapPrinter(map).print(activityNumber - 1);
-        }
-        else System.out.println("There are no activities added yet.");
+        // FIXME
+//        Map map = exerciser.getMap();
+//
+//        if(map != null && !map.getActivities().isEmpty()){
+//            showActivities();
+//            int activityNumber = promptInt("Enter selected activity number");
+//
+//            new MapPrinter(map).print(activityNumber - 1);
+//        }
+//        else System.out.println("There are no activities added yet.");
     }
 
     private static void removeGear() {
@@ -286,13 +285,14 @@ public class Main{
     private static void removeActivity() {
         Map map = exerciser.getMap();
 
-        if(map != null && !map.getActivities().isEmpty()) {
+        if(!exerciser.getActivities().isEmpty()) {
             showActivities();
             int activityNumber = promptInt(
                     String.format("Enter selected activity number (must be from 1 to %d inclusive)",
-                            map.getActivities().size()));
+                            exerciser.getActivities().size()));
 
-            map.removeActivity(activityNumber-1);
+            map.removeRoute(exerciser.getActivity(activityNumber - 1).getRoute());
+            exerciser.removeActivity(activityNumber - 1);
         }
         else System.out.println("No activities to remove.");
     }

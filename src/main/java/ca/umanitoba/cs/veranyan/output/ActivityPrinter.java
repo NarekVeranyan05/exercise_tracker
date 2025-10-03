@@ -29,7 +29,7 @@ public class ActivityPrinter {
 
         System.out.print("Activity start = " + activity.getStart() +
                 " | end = " + activity.getEnd() + " | distance passed = " +
-                (activity.getStepsAmount() * METERS_PER_STEP) + " meters | average speed = " +
+                (activity.getRoute().getStepsAmount() * METERS_PER_STEP) + " meters | average speed = " +
                 activity.getAvgSpeed() + " meters per second.\n");
 
         // gear info
