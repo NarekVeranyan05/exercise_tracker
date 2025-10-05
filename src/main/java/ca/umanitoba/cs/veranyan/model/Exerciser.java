@@ -15,18 +15,17 @@ import java.util.Comparator;
  * The Exerciser is the class representing the user of this
  * application. It contains the {@link Map}, all the {@link Gear}
  * instances that the user has purchased to later choose from and to
- * a particular activity, and the {@link Activity} instances.
+ * a particular Activity, and the {@link Activity} instances.
  */
 public class Exerciser {
     private Map map; // map singleton
     private final SortedSet<Gear> gears;
-    private final SortedSet<Activity> activities;
 
     /**
      * Constructor for Exerciser.
      * Requires to add a Gear to an Exerciser.
-     * @param type the GearType of initial Gear to be added to Exerciser. Cannot be null.
-     * @param name the name of initial Gear to be added to Exerciser. Cannot be null or blank.
+     * @param type the GearType of initial Gear to be added to Exerciser. Cannot be {@code null}.
+     * @param name the name of initial Gear to be added to Exerciser. Cannot be {@code null} or blank.
      * @param avgSpeed the average speed of the initial Gear to be added to Exerciser. Must be positive.
      */
     public Exerciser(GearType type, String name, double avgSpeed){
@@ -38,25 +37,18 @@ public class Exerciser {
             }
         });
 
-        // activities should not have duplicates.
-        // activities are put in ascending order in the Set.
-        this.activities = new TreeSet<>(new Comparator<Activity>() {
-            @Override
-            public int compare(Activity o1, Activity o2) {
-                return o1.getStart().compareTo(o2.getStart());
-            }
-        });
-
-        // adding new Gear instance
+        // adding initial gear
         this.gears.add(new Gear(type, name, avgSpeed));
 
         checkExerciser();
     }
 
     /**
-     * @return the Map singleton added to the system. Or null if no map added.
+     * @return the Map singleton added to the system. Or null if no map added. May be {@code null}.
      */
     public Map getMap() {
+        checkExerciser();
+
         return map;
     }
 
@@ -65,6 +57,8 @@ public class Exerciser {
      * @param map the Map singleton to add (must not be {@code null})
      */
     public void addMap(Map map){
+        checkExerciser();
+
         Preconditions.checkNotNull(map, "map cannot be null.");
         Preconditions.checkState(this.map == null, "previous map was not removed.");
         checkExerciser();
@@ -78,33 +72,42 @@ public class Exerciser {
      * Removes the Map from the system.
      */
     public void removeMap(){
+        checkExerciser();
+
         map = null;
     }
 
     /**
-     * @return the unmodifiable list of Gears.
+     * @return the unmodifiable list of Gears. Must not be {@code null}
      */
     public SortedSet<Gear> getGears(){
+        checkExerciser();
+
         return Collections.unmodifiableSortedSet(gears);
     }
 
     /**
      * @param index the index of the Gear.
-     * @return the Gear at the given index.
+     * @return the Gear at the given index. Must not be {@code null}.
      */
     public Gear getGear(int index){
+        checkExerciser();
+
         Iterator<Gear> gearIterator = gears.iterator();
 
+        // omitting all elements until reaching the element at index
         for(int i = 0; i < index; i++)
             gearIterator.next();
+
+        checkExerciser();
 
         return gearIterator.next();
     }
 
     /**
      * Adds new Gear to the Exerciser.
-     * @param type the GearType of initial Gear to be added to Exerciser. Cannot be null.
-     * @param name the name of initial Gear to be added to Exerciser. Cannot be null or blank.
+     * @param type the GearType of initial Gear to be added to Exerciser. Cannot be {@code null}.
+     * @param name the name of initial Gear to be added to Exerciser. Cannot be {@code null} or blank.
      * @param avgSpeed the average speed of the initial Gear to be added to Exerciser. Must be positive.
      */
     public void addGear(GearType type, String name, double avgSpeed){
@@ -124,58 +127,12 @@ public class Exerciser {
         checkExerciser();
 
         Iterator<Gear> iterator = gears.iterator();
+
+        // omitting all elements until reaching the element at index
         for(int j = 0; j < index; j++)
             iterator.next();
 
         gears.remove(iterator.next());
-
-        checkExerciser();
-    }
-
-    /**
-     * @return the unmodifiable list of activities on the Map
-     */
-    public SortedSet<Activity> getActivities() {
-        return Collections.unmodifiableSortedSet(activities);
-    }
-
-    /**
-     * @param index the index of the Activity.
-     * @return the Activity at the given index.
-     */
-    public Activity getActivity(int index){
-        Iterator<Activity> activityIterator = activities.iterator();
-
-        for(int i = 0; i < index; i++)
-            activityIterator.next();
-
-        return activityIterator.next();
-    }
-
-    /**
-     * Adds an activity to the Map instance.
-     * @param activity the activity instance to add to Map.
-     */
-    public void addActivity(Activity activity){
-        checkExerciser();
-
-        activities.add(activity);
-
-        checkExerciser();
-    }
-
-    /**
-     * Removes an activity from the Map.
-     * @param index the index of the activity to remove
-     */
-    public void removeActivity(int index){
-        checkExerciser();
-
-        Iterator<Activity> iterator = activities.iterator();
-        for(int j = 0; j < index; j++)
-            iterator.next();
-
-        activities.remove(iterator.next());
 
         checkExerciser();
     }
@@ -186,15 +143,10 @@ public class Exerciser {
     private void checkExerciser(){
         Preconditions.checkNotNull(gears, "gears cannot be null.");
         Preconditions.checkState(!gears.isEmpty(), "gears should have at least one entry.");
-        Preconditions.checkNotNull(activities, "activities cannot be null.");
 
         // Gear cannot be null
         for (var gear : gears)
             Preconditions.checkNotNull(gear, "gears entry cannot be null.");
-
-        // Activity cannot be null
-        for (var activity : activities)
-            Preconditions.checkNotNull(activity, "activities entry cannot be null.");
     }
 
 }

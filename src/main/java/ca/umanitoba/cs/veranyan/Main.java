@@ -18,14 +18,15 @@ import java.util.Scanner;
 /**
  * The main class is the exercise-tracking manager
  * to interact with the application.
+ * @implNote start the main method in order to run the exercise tracker program.
  */
 public class Main{
     private static Scanner scnr;
     private static Exerciser exerciser;
 
     /**
-     * .Prints out to standard output stream (System.out).
-     *  Takes input from standard input stream (System.in).
+     * Prints out to standard output stream (System.out).
+     * Takes input from standard input stream (System.in).
      * @param args arguments from command line.
      */
     public static void main(String[] args) {
@@ -94,7 +95,7 @@ public class Main{
     }
 
     /**
-     * Prompts user to add new Gear. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Gear}. Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addGear() {
@@ -120,7 +121,8 @@ public class Main{
     }
 
     /**
-     * Prompts user to add new Map. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Map}.
+     * Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addMap() {
@@ -138,11 +140,14 @@ public class Main{
     }
 
     /**
-     * Prompts user to add new Obstacle. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Obstacle}.
+     * Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addObstacle() {
         if(exerciser.getMap() != null){
+            showMap();
+
             System.out.println("---Obstacle coordinates must be within map boundaries---");
             int upperLeftX = promptInt("Enter upper-left x-coordinate: ");
             int upperLeftY = promptInt("Enter upper-left y-coordinate: ");
@@ -155,7 +160,8 @@ public class Main{
     }
 
     /**
-     * Prompts user to add new Obstacle. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Obstacle}.
+     * Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addActivity() {
@@ -166,16 +172,18 @@ public class Main{
                     String.format("Enter selected gear number for the activity (must be from 1 to %d inclusive)",
                             exerciser.getGears().size()));
 
-
+            // starting point selection
             showMap();
             System.out.println("---Activity starting coordinates must be within map boundaries---");
             int x = promptInt("Enter starting point x-coordinate");
             int y = promptInt("Enter starting point y-coordinate");
 
+            // creating the activity
             Route route = new Route(x, y);
             Activity activity = new Activity(exerciser.getGear(gearNumber-1), route);
-            exerciser.getMap().addRoute(route);
+            exerciser.getMap().addActivity(activity);
 
+            // movement throughout the activity
             int makeStep = promptInt("Enter 1 to move or -1 to end activity");
             while(makeStep != -1) {
                 System.out.println("Directions: ");
@@ -198,7 +206,8 @@ public class Main{
     }
 
     /**
-     * Displays Map. Prints out to standard output stream (System.out)
+     * Displays {@link Map}.
+     * Prints out to standard output stream (System.out).
      */
     private static void showMap() {
         if(exerciser.getMap() != null)
@@ -207,7 +216,7 @@ public class Main{
     }
 
     /**
-     * Displays Gears. Prints out to standard output stream (System.out)
+     * Displays gears. Prints out to standard output stream (System.out)
      */
     private static void showGear() {
         if(exerciser != null){
@@ -239,12 +248,14 @@ public class Main{
     }
 
     /**
-     * Displays activities. Prints out to standard output stream (System.out)
+     * Displays activities. Prints out to standard output stream (System.out).
      */
     private static void showActivities() {
-        if(!exerciser.getActivities().isEmpty()){
+        Map map = exerciser.getMap();
+
+        if(map != null && !map.getActivities().isEmpty()){
             int i = 1;
-            for(Activity activity : exerciser.getActivities()){
+            for(Activity activity : map.getActivities()){
                 System.out.print(i + ". ");
                 new ActivityPrinter(activity).print();
                 System.out.println();
@@ -254,19 +265,28 @@ public class Main{
         else System.out.println("There are no activities added yet.");
     }
 
+    /**
+     * Displays a single {@link Activity}'s {@link Route} on the {@link Map}.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void showActivity() {
-        // FIXME
-//        Map map = exerciser.getMap();
-//
-//        if(map != null && !map.getActivities().isEmpty()){
-//            showActivities();
-//            int activityNumber = promptInt("Enter selected activity number");
-//
-//            new MapPrinter(map).print(activityNumber - 1);
-//        }
-//        else System.out.println("There are no activities added yet.");
+        Map map = exerciser.getMap();
+
+        if(map != null && !map.getActivities().isEmpty()){
+            showActivities();
+            int activityNumber = promptInt("Enter selected activity number");
+
+            new MapPrinter(map).print(activityNumber - 1);
+        }
+        else System.out.println("There are no activities added yet.");
     }
 
+    /**
+     * Removes {@link Gear} from the system.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void removeGear() {
         if(exerciser != null){
             showGear();
@@ -282,21 +302,30 @@ public class Main{
         else System.out.println("No gears to remove.");
     }
 
+    /**
+     * Removes an {@link Activity} from the system.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void removeActivity() {
         Map map = exerciser.getMap();
 
-        if(!exerciser.getActivities().isEmpty()) {
+        if(map != null && !map.getActivities().isEmpty()) {
             showActivities();
             int activityNumber = promptInt(
                     String.format("Enter selected activity number (must be from 1 to %d inclusive)",
-                            exerciser.getActivities().size()));
+                            map.getActivities().size()));
 
-            map.removeRoute(exerciser.getActivity(activityNumber - 1).getRoute());
-            exerciser.removeActivity(activityNumber - 1);
+            map.removeActivity(activityNumber - 1);
         }
         else System.out.println("No activities to remove.");
     }
 
+    /**
+     * Removes an {@link Obstacle} from the system.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void removeObstacle() {
         Map map = exerciser.getMap();
 
@@ -311,6 +340,10 @@ public class Main{
         else System.out.println("No obstacles to remove.");
     }
 
+    /**
+     * Removes the {@link Map} singleton from the system.
+     * Prints out to standard output stream (System.out).
+     */
     private static void removeMap() {
         if(exerciser.getMap() != null) {
             exerciser.removeMap(); // removing reference in the exerciser
@@ -320,6 +353,10 @@ public class Main{
         else System.out.println("No map to remove.");
     }
 
+    /**
+     * Prints the control menu.
+     * Prints out to standard output stream (System.out).
+     */
     public static void printMenu(){
         System.out.println("""
         Select one of the options below:

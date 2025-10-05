@@ -1,7 +1,7 @@
-* Title: Track-Me-Riding
-* Author: Narek Veranyan (veranyan@myumanitoba.ca)
-* Student number: 8040209
-* Date: October __, 2025
+* **Title: Track-Me-Riding**
+* **Author: Narek Veranyan (veranyan@myumanitoba.ca)**
+* **Student number: 8040209**
+* **Date: October 6, 2025**
 ---
 
 # Overview
@@ -35,37 +35,30 @@ The project can be run using several options:
 
 # Domain model
 
-Here's my domain model:
+Here's the domain model for the project:
 
 ```mermaid 
 classDiagram
     class Exerciser {
         -Map map
         -SortedSet~Gear~ gears
-        -SortedSet~Activity~ activities
         
         +getMap() Map
         +addMap(Map) void
         +removeMap() void
         +getGears() SortedSet~Gear~
         +getGear(int) Gear
-        +addGear(GearType, String, double)
+        +addGear(GearType, String, double) void
         +removeGear(int) void
-        +getActivities() SortedSet~Activity~
-        +addActivivity(Activity) void
-        +removeActivity(int) void
     }
     
     note for Exerciser"invariants:
         * gears != null
         * gears.length >= 1
-        * loop: no entry is null in gears
-        * activities != null
-        * loop: no entry is null in activities"
+        * loop: no entry is null in gears"
     
     Exerciser --* Gear
     Exerciser --* Map
-%%    Exerciser --* Activity
     
     class Gear {
         -GearType type
@@ -94,33 +87,34 @@ classDiagram
         -int width
         -int length
         -List~Obstacle~ obstacles
-        -SortedSet~Route~ routes
+        -SortedSet~Activity~ activities
         
         +getWidth() int
         +getLength() int
         +getObstacles() List~Obstacle~
-        +getRoutes() SortedSet~Route~
         +addObstacle(int, int, int, int) void
         +removeObstacle(int) void
-        +addRoute(Route) void
-        +removeRoute(Route) void
-        +isInFeature(MapFeatureType, int, int) boolean
-        +isInFeature(MapFeatureType, int, int, int) boolean
+        +getActivities() SortedSet~Activity~
+        +addActivivity(Activity) void
+        +removeActivity(int) void
+        +isInObstacle(int, int) boolean
+        +isInRoute(int, int) boolean
+        +isInRoute(int, int, int) boolean
     }
     
     note for Map"invariants:
         * width >= 1
         * length >= 1
         * obstacles != null
-        * routes != null
+        * activities != null
         * loop: no entry is null in obstacles
         * loop: no obstacle is out of boundaries
         * loop: no entry is null in activities
-        * loop: no activity is out of boundaries
-        * activities and obstacles don't overlap"
+        * loop: no activity route is out of boundaries
+        * routes and obstacles don't overlap"
     
     Map --* Obstacle
-    Map --o Activity
+    Map --* Activity
     
     class Activity{
         -Gear gear
@@ -150,6 +144,7 @@ classDiagram
         -List~Coordinate~ coordinates
         
         +getStepsAmount() int
+        +getCoordinate(int) Coordinate
         +move(int, int) void
         +contains(int, int) boolean
     }
@@ -168,85 +163,20 @@ classDiagram
     }
     
     note for Obstacle"invariants:
-        * upperLeftX >= 0
-        * upperLeftY >= 0
-        * lowerRightX > upperLeftX
-        * lowerRightY > upperLeftY"
+        * topLeftCoord != null
+        * bottomRightCoord != null
+        * bottomRightCoord is lower and to the right of topLeftCoord"
     
     Obstacle --* Coordinate
     
     class Coordinate {
         -int x
         -int y
-        
-        +getX() int
-        +getY() int
     }
     
     note for Coordinate "invariants:
         * x >= 0
         * y >= 0"
-    
-    %%    class ExerciserPrinter{
-    %%        -Exerciser exerciser
-    %%        
-    %%        +print() void
-    %%    }
-    %%    
-    %%    note for ExerciserPrinter"invariants:
-    %%        * exerciser != null
-    %%    "
-    %%    
-    %%    ExerciserPrinter --o Exerciser
-    %%    
-    %%    class GearPrinter {
-    %%        -Gear gear
-    %%        
-    %%        +print() void
-    %%    }
-    %%    
-    %%    note for GearPrinter"invariants:
-    %%        * gear != null
-    %%    "
-    %%    
-    %%    GearPrinter --o Gear
-    %%
-    %%    class MapPrinter {
-    %%        -Map map
-    %%        
-    %%        printMap() void
-    %%        printMap(int) void
-    %%    }
-    %%    
-    %%    note for MapPrinter"invariants:
-    %%        * map != null
-    %%    "
-    %%    
-    %%    MapPrinter --o Map
-    %%    
-    %%    class ActivityPrinter {
-    %%        -Activity activity
-    %%        
-    %%        print() void
-    %%    }
-    %%    
-    %%    note for ActivityPrinter"invariants:
-    %%        * activity != null
-    %%    "
-    %%
-    %%    class ObstaclePrinter {
-    %%        -Obstacle obstacle
-    %%
-    %%        +print() void
-    %%    }
-    %%
-    %%    note for ObstaclePrinter"invariants:
-    %%        * obstacles != null
-    %%    "
-    %%
-    %%    ObstaclePrinter --o Obstacle
-    %%    
-    %%    ActivityPrinter --o Activity  
 ```
 
 

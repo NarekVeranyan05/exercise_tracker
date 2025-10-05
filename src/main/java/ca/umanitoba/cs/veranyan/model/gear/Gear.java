@@ -9,7 +9,6 @@ import com.google.common.base.Preconditions;
  * @param avgSpeed the average speed of the gear. Must be positive.
  */
 public record Gear(GearType type, String name, double avgSpeed){
-
     /**
      * Compact constructor for Gear
      * @param type the GearType of the gear. Must not be {@code null}.

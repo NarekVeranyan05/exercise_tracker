@@ -1,12 +1,7 @@
 package ca.umanitoba.cs.veranyan.output;
 
-import ca.umanitoba.cs.veranyan.model.Activity;
 import ca.umanitoba.cs.veranyan.model.map.Map;
 import com.google.common.base.Preconditions;
-
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 
 /**
  * The printer class for the {@link Map}
@@ -79,6 +74,8 @@ public class MapPrinter {
             System.out.println();
         }
         System.out.println();
+
+        checkMapPrinter();
     }
 
     /**

@@ -1,7 +1,7 @@
 package ca.umanitoba.cs.veranyan.model.gear;
 
 /**
- * Types of a Gear object
+ * Types of a {@link Gear} instance to specify Gear characteristics.
  */
 public enum GearType {
     ROAD_BIKE,

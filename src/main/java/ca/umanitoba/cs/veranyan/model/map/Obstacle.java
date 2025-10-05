@@ -1,13 +1,13 @@
 package ca.umanitoba.cs.veranyan.model.map;
 
-import ca.umanitoba.cs.veranyan.model.Coordinate;
 import com.google.common.base.Preconditions;
 
 /**
- * An obstacle is an object which an {@link ca.umanitoba.cs.veranyan.model.Activity}
- * cannot pass through. Obstacles are on the {@link Map}
- * @param topLeftCoord the Coordinate of the top-left vertex of the obstacle.
- * @param bottomRightCoord the Coordinate of the bottom-right vertex of the obstacle.
+ * An obstacle is an object which a {@link Route}
+ * cannot pass through. Obstacles are on the {@link Map}.
+ * An obstacle must be within {@link Map} boundaries.
+ * @param topLeftCoord the Coordinate of the top-left vertex of the obstacle. Must be non-negative.
+ * @param bottomRightCoord the Coordinate of the bottom-right vertex of the obstacle. Must be non-negative.
  */
 public record Obstacle(Coordinate topLeftCoord, Coordinate bottomRightCoord){
     public Obstacle {
@@ -29,8 +29,8 @@ public record Obstacle(Coordinate topLeftCoord, Coordinate bottomRightCoord){
      */
     public boolean contains(int x, int y) {
         /*
-        (x, y) is within bounds if its x-coordinate sits in between the upper-left and lower-right x-coordinates of
-        the Obstacle, and if its x-coordinate sits in between the upper-left and lower-right y-coordinates of the Obstacle.
+        (x, y) is within bounds if its x-coordinate sits in between the top-left and bottom-right x-coordinates of
+        the Obstacle, and if its x-coordinate sits in between the top-left and bottom-right y-coordinates of the Obstacle.
          */
         return (x >= topLeftCoord.x()) && (x <= bottomRightCoord.x()) &&
                 (y >= topLeftCoord.y()) && (y <= bottomRightCoord.y());

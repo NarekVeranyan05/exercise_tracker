@@ -14,16 +14,16 @@ import java.util.List;
 /**
  * An Activity is a class that contains all the information about
  * a particular cycling exercise. It contains the {@link Gear} used
- * for that particular exercise. Activities are stored on the {@link Exerciser}.
+ * for that particular exercise. Activities are stored in the {@link Exerciser} instance.
  */
 public class Activity {
-    private static final int METERS_PER_STEP = 10;
+    private static final int METERS_PER_STEP = 10; // a step is one coordinate on the Map grid.
 
-    private final Gear gear;
-    private final LocalDateTime start;
-    private LocalDateTime end; // activity end is initialised with null until ended explicitly using endActivity()
+    private final Gear gear; // the gear to be used in Activity
+    private final LocalDateTime start; // the start time of Activity
+    private LocalDateTime end; // Activity end is initialised with null until ended explicitly using endActivity()
     private final Route route;
-    private double avgSpeed; // value determined at activity end
+    private double avgSpeed; // value determined at Activity end
 
     /**
      * Constructor for Activity
@@ -40,41 +40,50 @@ public class Activity {
     }
 
     /**
-     * Note: getAvgSpeed() can be called only when Activity has been ended using endActivity()
+     * @implNote getAvgSpeed() can be called only when Activity has been ended using endActivity().
      * @return the average speed (meters per second) throughout the Activity.
      */
     public double getAvgSpeed() {
         // average speed is determined only after the activity is finished.
         Preconditions.checkNotNull(end, "end cannot be null");
+        checkActivity();
 
         return avgSpeed;
     }
 
     /**
-     * @return the start time for the Activity.
+     * @return the start time for the Activity. Must not be {@code null}.
      */
     public LocalDateTime getStart() {
+        checkActivity();
+
         return start;
     }
 
     /**
-     * @return the end time for the Activity.
+     * @return the end time for the Activity. May return {@code null} if Activity did not end.
      */
     public LocalDateTime getEnd() {
+        checkActivity();
+
         return end;
     }
 
     /**
-     * @return the Gear used in the Activity.
+     * @return the Gear used in the Activity. Must not be {@code null}.
      */
     public Gear getGear() {
+        checkActivity();
+
         return gear;
     }
 
     /**
-     * @return the Route used in the Activity.
+     * @return the Route used in the Activity. Must not be {@code null}.
      */
     public Route getRoute(){
+        checkActivity();
+
         return route;
     }
 
@@ -103,6 +112,6 @@ public class Activity {
         Preconditions.checkState(avgSpeed >= 0, "avgSpeed cannot be negative.");
 
         // Coordinate will ensure coordinates are non-negative
-        // MapGrid will ensure Route is within boundaries
+        // Map will ensure Route is within boundaries
     }
 }
