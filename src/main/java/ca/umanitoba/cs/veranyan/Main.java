@@ -58,7 +58,7 @@ public class Main{
                     addActivity();
                     break;
                 case 5:
-                    showMap();
+                    showMap(true);
                     break;
                 case 6:
                     showGear();
@@ -133,7 +133,7 @@ public class Main{
             int length = promptInt("Enter length for the map (must be greater than 0)");
 
             exerciser.addMap(Map.getInstance(width, length));
-            showMap();
+            showMap(false);
         }
         else
             System.out.println("Map already exists. You first have to remove the existing map to create a new one.");
@@ -146,13 +146,13 @@ public class Main{
      */
     private static void addObstacle() {
         if(exerciser.getMap() != null){
-            showMap();
+            showMap(false);
 
             System.out.println("---Obstacle coordinates must be within map boundaries---");
-            int upperLeftX = promptInt("Enter upper-left x-coordinate: ");
-            int upperLeftY = promptInt("Enter upper-left y-coordinate: ");
-            int lowerRightX = promptInt("Enter lower-right x-coordinate: ");
-            int lowerRightY = promptInt("Enter lower-right y-coordinate: ");
+            int upperLeftX = promptInt("Enter upper-left x-coordinate");
+            int upperLeftY = promptInt("Enter upper-left y-coordinate");
+            int lowerRightX = promptInt("Enter lower-right x-coordinate");
+            int lowerRightY = promptInt("Enter lower-right y-coordinate");
 
             exerciser.getMap().addObstacle(upperLeftX, upperLeftY, lowerRightX, lowerRightY);
         }
@@ -173,7 +173,7 @@ public class Main{
                             exerciser.getGears().size()));
 
             // starting point selection
-            showMap();
+            showMap(false);
             System.out.println("---Activity starting coordinates must be within map boundaries---");
             int x = promptInt("Enter starting point x-coordinate");
             int y = promptInt("Enter starting point y-coordinate");
@@ -197,7 +197,7 @@ public class Main{
                 int numberOfSteps = promptInt("Enter number of steps (must be non-negative)");
                 route.move(directionNumber, numberOfSteps);
 
-                showMap();
+                showMap(false);
                 makeStep = promptInt("Enter 1 to move or -1 to end activity");
             }
             activity.endActivity();
@@ -208,10 +208,11 @@ public class Main{
     /**
      * Displays {@link Map}.
      * Prints out to standard output stream (System.out).
+     * @param summarise true if summed distance of all routes is to be printed, false otherwise
      */
-    private static void showMap() {
+    private static void showMap(boolean summarise) {
         if(exerciser.getMap() != null)
-            new MapPrinter(exerciser.getMap()).print();
+            new MapPrinter(exerciser.getMap()).print(summarise);
         else System.out.println("There is no map added to the system. Add a map first in order to add obstacles.");
     }
 
