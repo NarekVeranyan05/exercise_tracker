@@ -1,17 +1,19 @@
 package ca.umanitoba.cs.veranyan.output;
 
-import ca.umanitoba.cs.veranyan.model.Activity;
 import ca.umanitoba.cs.veranyan.model.map.Map;
 import com.google.common.base.Preconditions;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 
 /**
  * The printer class for the {@link Map}
  */
 public class MapPrinter {
+    private static final int METERS_PER_STEP = 10;
+
     // symbols to display on grid
     public static final String OBSTACLE = "*";
     public static final String EMPTY = ".";
@@ -31,8 +33,9 @@ public class MapPrinter {
 
     /**
      * Prints the Map and all its Activities. This method prints to standard output (`System.out`).
+     * @param summarise true if summed distance of all routes is to be printed, false otherwise
      */
-    public void print(){
+    public void print(boolean summarise){
         checkMapPrinter();
 
         System.out.println("Legend:");
@@ -72,7 +75,7 @@ public class MapPrinter {
             for (int x = 0; x < map.getWidth(); x++){ // x-coordinates
                 if(map.isInObstacle(x, y)) // searches in all obstacles
                     System.out.printf(" %" + maxXLen + "s", OBSTACLE);
-                else if(map.isInActivity(x, y)) // searches in all activities
+                else if(map.isInRoute(x, y)) // searches in all activities
                     System.out.printf(" %" + maxXLen + "s", ROUTE);
                 else System.out.printf(" %" + maxXLen + "s", EMPTY);
             }
@@ -80,20 +83,17 @@ public class MapPrinter {
         }
         System.out.println();
 
-        // printing Activity distance summary
-        LocalDate instant = LocalDate.now();
-        LocalDate today = LocalDate.of(instant.getYear(), instant.getMonth(), instant.getDayOfMonth());
-        LocalDate firstDayOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate lastDayOfWeek = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-        int totalNumSteps = 0;
+        if(summarise) {
+            // printing Activity distance summary for week and month
+            LocalDate today = LocalDate.now();
+            int numStepsWeek = map.getTotalNumSteps(today, ChronoUnit.WEEKS);
+            int numStepsMonth = map.getTotalNumSteps(today, ChronoUnit.MONTHS);
 
-        for(var activity : map.getActivities()){
-            // if activity occurred this week
-            if(activity.getStart().isAfter(firstDayOfWeek.atStartOfDay()) &&
-                activity.getEnd().isBefore(lastDayOfWeek.atStartOfDay())){
-                totalNumSteps += activity.getStepsAmount();
-            }
+            System.out.println("This week, you have cycled for " + (numStepsWeek * METERS_PER_STEP) + " meters.");
+            System.out.println("This month, you have cycled for " + (numStepsMonth * METERS_PER_STEP) + " meters.");
         }
+
+        checkMapPrinter();
     }
 
     /**
@@ -138,7 +138,7 @@ public class MapPrinter {
             for (int i = 0; i < map.getWidth(); i++){ // x-coordinates
                 if(map.isInObstacle(i, j)) // searches in all obstacles
                     System.out.printf(" %" + maxXLen + "s", OBSTACLE);
-                else if(map.isInActivity(index, i, j)) // searches in Activity at index
+                else if(map.isInRoute(index, i, j)) // searches in Activity at index
                     System.out.printf(" %" + maxXLen + "s", ROUTE);
                 else System.out.printf(" %" + maxXLen + "s", EMPTY);
             }

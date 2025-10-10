@@ -99,9 +99,7 @@ classDiagram
         +removeObstacle(int) void
         +addActivity(Activity) void
         +removeActivity(int) void
-        +isInObstacle(int, int) boolean
-        +isInActivity(int, int) boolean
-        +isInActivity(int, int, int) boolean
+        +isInFeature(MapFeatureType type, int, int) boolean
     }
 
     note for Map"invariants:

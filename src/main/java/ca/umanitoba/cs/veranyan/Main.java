@@ -6,6 +6,7 @@ import ca.umanitoba.cs.veranyan.model.gear.Gear;
 import ca.umanitoba.cs.veranyan.model.gear.GearType;
 import ca.umanitoba.cs.veranyan.model.map.Map;
 import ca.umanitoba.cs.veranyan.model.map.Obstacle;
+import ca.umanitoba.cs.veranyan.model.map.Route;
 import ca.umanitoba.cs.veranyan.output.ActivityPrinter;
 import ca.umanitoba.cs.veranyan.output.GearPrinter;
 import ca.umanitoba.cs.veranyan.output.MapPrinter;
@@ -17,14 +18,15 @@ import java.util.Scanner;
 /**
  * The main class is the exercise-tracking manager
  * to interact with the application.
+ * @implNote start the main method in order to run the exercise tracker program.
  */
 public class Main{
     private static Scanner scnr;
     private static Exerciser exerciser;
 
     /**
-     * .Prints out to standard output stream (System.out).
-     *  Takes input from standard input stream (System.in).
+     * Prints out to standard output stream (System.out).
+     * Takes input from standard input stream (System.in).
      * @param args arguments from command line.
      */
     public static void main(String[] args) {
@@ -56,7 +58,7 @@ public class Main{
                     addActivity();
                     break;
                 case 5:
-                    showMap();
+                    showMap(true);
                     break;
                 case 6:
                     showGear();
@@ -93,7 +95,7 @@ public class Main{
     }
 
     /**
-     * Prompts user to add new Gear. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Gear}. Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addGear() {
@@ -119,7 +121,8 @@ public class Main{
     }
 
     /**
-     * Prompts user to add new Map. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Map}.
+     * Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addMap() {
@@ -130,23 +133,26 @@ public class Main{
             int length = promptInt("Enter length for the map (must be greater than 0)");
 
             exerciser.addMap(Map.getInstance(width, length));
-            showMap();
+            showMap(false);
         }
         else
             System.out.println("Map already exists. You first have to remove the existing map to create a new one.");
     }
 
     /**
-     * Prompts user to add new Obstacle. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Obstacle}.
+     * Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addObstacle() {
         if(exerciser.getMap() != null){
+            showMap(false);
+
             System.out.println("---Obstacle coordinates must be within map boundaries---");
-            int upperLeftX = promptInt("Enter upper-left x-coordinate: ");
-            int upperLeftY = promptInt("Enter upper-left y-coordinate: ");
-            int lowerRightX = promptInt("Enter lower-right x-coordinate: ");
-            int lowerRightY = promptInt("Enter lower-right y-coordinate: ");
+            int upperLeftX = promptInt("Enter upper-left x-coordinate");
+            int upperLeftY = promptInt("Enter upper-left y-coordinate");
+            int lowerRightX = promptInt("Enter lower-right x-coordinate");
+            int lowerRightY = promptInt("Enter lower-right y-coordinate");
 
             exerciser.getMap().addObstacle(upperLeftX, upperLeftY, lowerRightX, lowerRightY);
         }
@@ -154,7 +160,8 @@ public class Main{
     }
 
     /**
-     * Prompts user to add new Obstacle. Prints out to standard output stream (System.out).
+     * Prompts user to add new {@link Obstacle}.
+     * Prints out to standard output stream (System.out).
      * Takes input from standard input stream (System.in).
      */
     private static void addActivity() {
@@ -165,15 +172,18 @@ public class Main{
                     String.format("Enter selected gear number for the activity (must be from 1 to %d inclusive)",
                             exerciser.getGears().size()));
 
-
-            showMap();
+            // starting point selection
+            showMap(false);
             System.out.println("---Activity starting coordinates must be within map boundaries---");
             int x = promptInt("Enter starting point x-coordinate");
             int y = promptInt("Enter starting point y-coordinate");
 
-            Activity activity = new Activity(exerciser.getGear(gearNumber-1), x, y);
+            // creating the activity
+            Route route = new Route(x, y);
+            Activity activity = new Activity(exerciser.getGear(gearNumber-1), route);
             exerciser.getMap().addActivity(activity);
 
+            // movement throughout the activity
             int makeStep = promptInt("Enter 1 to move or -1 to end activity");
             while(makeStep != -1) {
                 System.out.println("Directions: ");
@@ -185,29 +195,29 @@ public class Main{
                 System.out.println("---Activity route must be within map boundaries---");
                 int directionNumber = promptInt("Enter selected direction number (must be from 1 to 4 inclusive)");
                 int numberOfSteps = promptInt("Enter number of steps (must be non-negative)");
-                activity.move(directionNumber, numberOfSteps);
+                route.move(directionNumber, numberOfSteps);
 
-                showMap();
+                showMap(false);
                 makeStep = promptInt("Enter 1 to move or -1 to end activity");
             }
             activity.endActivity();
         }
-        else if (exerciser == null)
-            System.out.println("No gear to add to an activity. Add gear first.");
-        else System.out.println("There is no map added to the system. Add a map first in order to add obstacles.");
+        else System.out.println("There is no map added to the system. Add a map first in order to add activities.");
     }
 
     /**
-     * Displays Map. Prints out to standard output stream (System.out)
+     * Displays {@link Map}.
+     * Prints out to standard output stream (System.out).
+     * @param summarise true if summed distance of all routes is to be printed, false otherwise
      */
-    private static void showMap() {
+    private static void showMap(boolean summarise) {
         if(exerciser.getMap() != null)
-            new MapPrinter(exerciser.getMap()).print();
+            new MapPrinter(exerciser.getMap()).print(summarise);
         else System.out.println("There is no map added to the system. Add a map first in order to add obstacles.");
     }
 
     /**
-     * Displays Gears. Prints out to standard output stream (System.out)
+     * Displays gears. Prints out to standard output stream (System.out)
      */
     private static void showGear() {
         if(exerciser != null){
@@ -239,7 +249,7 @@ public class Main{
     }
 
     /**
-     * Displays activities. Prints out to standard output stream (System.out)
+     * Displays activities. Prints out to standard output stream (System.out).
      */
     private static void showActivities() {
         Map map = exerciser.getMap();
@@ -256,6 +266,11 @@ public class Main{
         else System.out.println("There are no activities added yet.");
     }
 
+    /**
+     * Displays a single {@link Activity}'s {@link Route} on the {@link Map}.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void showActivity() {
         Map map = exerciser.getMap();
 
@@ -268,6 +283,11 @@ public class Main{
         else System.out.println("There are no activities added yet.");
     }
 
+    /**
+     * Removes {@link Gear} from the system.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void removeGear() {
         if(exerciser != null){
             showGear();
@@ -283,6 +303,11 @@ public class Main{
         else System.out.println("No gears to remove.");
     }
 
+    /**
+     * Removes an {@link Activity} from the system.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void removeActivity() {
         Map map = exerciser.getMap();
 
@@ -292,11 +317,16 @@ public class Main{
                     String.format("Enter selected activity number (must be from 1 to %d inclusive)",
                             map.getActivities().size()));
 
-            map.removeActivity(activityNumber-1);
+            map.removeActivity(activityNumber - 1);
         }
         else System.out.println("No activities to remove.");
     }
 
+    /**
+     * Removes an {@link Obstacle} from the system.
+     * Prints out to standard output stream (System.out).
+     * Takes input from the standard output stream (System.in).
+     */
     private static void removeObstacle() {
         Map map = exerciser.getMap();
 
@@ -311,6 +341,10 @@ public class Main{
         else System.out.println("No obstacles to remove.");
     }
 
+    /**
+     * Removes the {@link Map} singleton from the system.
+     * Prints out to standard output stream (System.out).
+     */
     private static void removeMap() {
         if(exerciser.getMap() != null) {
             exerciser.removeMap(); // removing reference in the exerciser
@@ -320,6 +354,10 @@ public class Main{
         else System.out.println("No map to remove.");
     }
 
+    /**
+     * Prints the control menu.
+     * Prints out to standard output stream (System.out).
+     */
     public static void printMenu(){
         System.out.println("""
         Select one of the options below:
