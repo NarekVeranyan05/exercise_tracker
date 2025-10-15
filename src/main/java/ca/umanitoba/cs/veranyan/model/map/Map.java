@@ -1,6 +1,7 @@
 package ca.umanitoba.cs.veranyan.model.map;
 
 import ca.umanitoba.cs.veranyan.model.Activity;
+import ca.umanitoba.cs.veranyan.model.Profile;
 import com.google.common.base.Preconditions;
 
 import java.time.DayOfWeek;
@@ -11,7 +12,7 @@ import java.util.*;
 
 /**
  * The Map is the class that contains all the {@link Obstacle}
- * instances and {@link Activity} instances of an {@link ca.umanitoba.cs.veranyan.model.Exerciser}.
+ * instances and {@link Activity} instances of an {@link Profile}.
  */
 public class Map {
     private static Map singleton;

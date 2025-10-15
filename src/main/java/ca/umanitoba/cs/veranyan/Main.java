@@ -1,7 +1,7 @@
 package ca.umanitoba.cs.veranyan;
 
 import ca.umanitoba.cs.veranyan.model.Activity;
-import ca.umanitoba.cs.veranyan.model.Exerciser;
+import ca.umanitoba.cs.veranyan.model.Profile;
 import ca.umanitoba.cs.veranyan.model.gear.Gear;
 import ca.umanitoba.cs.veranyan.model.gear.GearType;
 import ca.umanitoba.cs.veranyan.model.map.Map;
@@ -22,7 +22,7 @@ import java.util.Scanner;
  */
 public class Main{
     private static Scanner scnr;
-    private static Exerciser exerciser;
+    private static Profile exerciser;
 
     /**
      * Prints out to standard output stream (System.out).
@@ -99,6 +99,8 @@ public class Main{
      * Takes input from standard input stream (System.in).
      */
     private static void addGear() {
+        String profileName = promptString("Enter your profile name");
+
         // prints out GearType values
         System.out.println("Gear types:");
         int i = 1;
@@ -116,8 +118,8 @@ public class Main{
         double avgSpeed = promptDouble("Enter the average speed in meters per second (must be positive)");
 
         if(exerciser == null)
-            exerciser = new Exerciser(type, name, avgSpeed);
-        else exerciser.addGear(type, name, avgSpeed);
+            exerciser = new Profile(profileName, new Gear(type, name, avgSpeed));
+        else exerciser.addGear(new Gear(type, name, avgSpeed));
     }
 
     /**

@@ -1,5 +1,6 @@
 package ca.umanitoba.cs.veranyan.model.map;
 
+import ca.umanitoba.cs.veranyan.model.Profile;
 import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class Route {
     }
 
     /**
-     * @return the number of steps that the {@link ca.umanitoba.cs.veranyan.model.Exerciser}
+     * @return the number of steps that the {@link Profile}
      * passed in the {@link ca.umanitoba.cs.veranyan.model.Activity}.
      * @implNote a step is one coordinate on the {@link Map} grid.
      */

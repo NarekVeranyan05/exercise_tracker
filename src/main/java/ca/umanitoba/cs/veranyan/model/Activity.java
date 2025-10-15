@@ -5,16 +5,12 @@ import ca.umanitoba.cs.veranyan.model.map.Route;
 import com.google.common.base.Preconditions;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An Activity is a class that contains all the information about
  * a particular cycling exercise. It contains the {@link Gear} used
- * for that particular exercise. Activities are stored in the {@link Exerciser} instance.
+ * for that particular exercise. Activities are stored in the {@link Profile} instance.
  */
 public class Activity {
     private static final int METERS_PER_STEP = 10; // a step is one coordinate on the Map grid.

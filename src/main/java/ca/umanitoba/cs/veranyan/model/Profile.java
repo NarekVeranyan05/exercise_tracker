@@ -12,23 +12,25 @@ import java.util.Collections;
 import java.util.Comparator;
 
 /**
- * The Exerciser is the class representing the user of this
+ * The Profile is the class representing the user of this
  * application. It contains the {@link Map}, all the {@link Gear}
  * instances that the user has purchased to later choose from and to
  * a particular Activity, and the {@link Activity} instances.
  */
-public class Exerciser {
+public class Profile {
     private Map map; // map singleton
+    private String name;
     private final SortedSet<Gear> gears;
 
     /**
-     * Constructor for Exerciser.
-     * Requires to add a Gear to an Exerciser.
-     * @param type the GearType of initial Gear to be added to Exerciser. Cannot be {@code null}.
-     * @param name the name of initial Gear to be added to Exerciser. Cannot be {@code null} or blank.
-     * @param avgSpeed the average speed of the initial Gear to be added to Exerciser. Must be positive.
+     * Constructor for Profile.
+     * Requires to add a Gear to a Profile.
+     * @param profileName the name of the Profile.
+     * @param gear the initial gear to add
      */
-    public Exerciser(GearType type, String name, double avgSpeed){
+    public Profile(String profileName, Gear gear){
+        name = profileName;
+
         // Gears are ordered by name. Duplicates not allowed
         this.gears = new TreeSet<>(new Comparator<Gear>() {
             @Override
@@ -38,16 +40,37 @@ public class Exerciser {
         });
 
         // adding initial gear
-        this.gears.add(new Gear(type, name, avgSpeed));
+        this.gears.add(gear);
 
-        checkExerciser();
+        checkProfile();
+    }
+
+    /**
+     * @return the Profile name
+     */
+    public String getName() {
+        checkProfile();
+
+        return name;
+    }
+
+    /**
+     * Changes the name of the Profile
+     * @param name the new name of the Profile
+     */
+    public void setName(String name) {
+        checkProfile();
+
+        this.name = name;
+
+        checkProfile();
     }
 
     /**
      * @return the Map singleton added to the system. Or null if no map added. May be {@code null}.
      */
     public Map getMap() {
-        checkExerciser();
+        checkProfile();
 
         return map;
     }
@@ -57,22 +80,22 @@ public class Exerciser {
      * @param map the Map singleton to add (must not be {@code null})
      */
     public void addMap(Map map){
-        checkExerciser();
+        checkProfile();
 
         Preconditions.checkNotNull(map, "map cannot be null.");
         Preconditions.checkState(this.map == null, "previous map was not removed.");
-        checkExerciser();
+        checkProfile();
 
         this.map = map;
 
-        checkExerciser();
+        checkProfile();
     }
 
     /**
      * Removes the Map from the system.
      */
     public void removeMap(){
-        checkExerciser();
+        checkProfile();
 
         map = null;
     }
@@ -81,7 +104,7 @@ public class Exerciser {
      * @return the unmodifiable list of Gears. Must not be {@code null}
      */
     public SortedSet<Gear> getGears(){
-        checkExerciser();
+        checkProfile();
 
         return Collections.unmodifiableSortedSet(gears);
     }
@@ -91,7 +114,7 @@ public class Exerciser {
      * @return the Gear at the given index. Must not be {@code null}.
      */
     public Gear getGear(int index){
-        checkExerciser();
+        checkProfile();
 
         Iterator<Gear> gearIterator = gears.iterator();
 
@@ -99,32 +122,31 @@ public class Exerciser {
         for(int i = 0; i < index; i++)
             gearIterator.next();
 
-        checkExerciser();
+        checkProfile();
 
         return gearIterator.next();
     }
 
     /**
-     * Adds new Gear to the Exerciser.
-     * @param type the GearType of initial Gear to be added to Exerciser. Cannot be {@code null}.
-     * @param name the name of initial Gear to be added to Exerciser. Cannot be {@code null} or blank.
-     * @param avgSpeed the average speed of the initial Gear to be added to Exerciser. Must be positive.
+     * Adds new Gear to the Profile.
+     * @param gear the Gear to be added
      */
-    public void addGear(GearType type, String name, double avgSpeed){
-        checkExerciser();
+    public boolean addGear(Gear gear){
+        checkProfile();
 
-        gears.add(new Gear(type, name, avgSpeed));
+        boolean isAdded = gears.add(gear);
 
-        checkExerciser();
+        checkProfile();
+        return isAdded;
     }
 
     /**
-     * Removes a Gear whose index matches from the Exerciser.
-     * Exerciser must have at least one Gear.
+     * Removes a Gear whose index matches from the Profile.
+     * Profile must have at least one Gear.
      * @param index the index of the Gear object to remove.
      */
     public void removeGear(int index){
-        checkExerciser();
+        checkProfile();
 
         Iterator<Gear> iterator = gears.iterator();
 
@@ -134,13 +156,15 @@ public class Exerciser {
 
         gears.remove(iterator.next());
 
-        checkExerciser();
+        checkProfile();
     }
 
     /**
-     * Ensures Exerciser invariants are not violated.
+     * Ensures Profile invariants are not violated.
      */
-    private void checkExerciser(){
+    private void checkProfile(){
+        Preconditions.checkNotNull(name, "name cannot be null.");
+        Preconditions.checkState(!name.isBlank(), "name cannot be blank.");
         Preconditions.checkNotNull(gears, "gears cannot be null.");
         Preconditions.checkState(!gears.isEmpty(), "gears should have at least one entry.");
 

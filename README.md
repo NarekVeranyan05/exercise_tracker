@@ -31,35 +31,135 @@ The project can be run using several options:
     ```
     mvn compile exec:java -Dexec.mainClass="ca.umanitoba.cs.veranyan.Main"   
     ```
+# User Flow Diagram
 
+### log-in and sign-up
 
-# Domain model
+```mermaid
+flowchart
+    subgraph log-in and sign-up 
+        login[[log-in screen]]
+        login == sign up ==> profileInsertion
+        login == log in ==> checkExistence
+        
+        %% signup        
+        profileInsertion[profile insertion]
+        
+        profileInsertion == candidate profile ==> createProfile
+        
+        createProfile{create profile}
+        
+        createProfile -. profile already exists .-> profileInsertion
+        
+        createProfile -. profile created .-> mainMenu
+        
+        %% login
+        checkExistence{check profiles exist}
+        
+        checkExistence -. no profile in system .-> login
+        
+        checkExistence -. profiles exist .-> profileSelection
+        
+        profileSelection[profile selection]
+        
+        profileSelection == selected profile ==> loadProfile
+
+        loadProfile{load profile}
+        
+        loadProfile -. profile selected .-> mainMenu
+       
+        mainMenu[[main menu]]
+    end
+```
+
+### update profile
+
+```mermaid
+flowchart
+    subgraph update profile
+        updateScreen[[update screen]]
+        
+        updateScreen == name ==> nameInsertion
+        
+        updateScreen == add gear ==> gearInsertion
+        
+        updateScreen == remove gear ==> gearSelection
+        
+        %% change name
+        nameInsertion[name insertion]
+        
+        nameInsertion == name ==> changeName
+        
+        changeName{change name}
+        
+        changeName -. name is set for another profile .-> nameInsertion
+        
+        changeName -. name changed .-> mainMenu
+        
+        %% add gear
+        
+        gearInsertion[gear insertion]
+        
+        gearInsertion == gear ==> addGear
+
+        addGear{add gear}
+        
+        addGear -. gear already exists .-> gearInsertion
+        
+        addGear -. gear added .-> mainMenu
+        
+        %% remove gear
+        
+        gearSelection[gear selection]
+        
+        gearSelection == selected gear ==> removeGear
+        
+        removeGear{remove gear}
+        
+        removeGear -. must have 1 gear left .-> updateScreen
+        
+        removeGear -. gear removed .-> mainMenu
+        
+        mainMenu[[main menu]]
+    end
+```
+
+# Domain Model Diagram
 
 Here's my domain model:
 
+> changes:
+> 1. Exerciser class renamed Profile
+> 2. Added name attribute to Profile, changed invariant accordingly
+> 3. changed method to Profile::addGear(Gear) boolean
+
 ```mermaid 
 classDiagram
-    class Exerciser {
+    class Profile {
         -Map map
+        -String name
         -SortedSet~Gear~ gears
         
-        +getGears() SortedSet~Gear~
-        +getGear(int) Gear
-        +addGear(GearType, String, double)
-        +removeGear(int) void
+        +getName() String
+        +setName() void
         +getMap() Map
         +addMap(Map) void
         +removeMap() void
+        +getGears() SortedSet~Gear~
+        +getGear(int) Gear
+        +addGear(Gear) boolean
+        +removeGear(int) void
     }
     
-    note for Exerciser"invariants:
+    note for Profile"invariants:
+        * name != null
+        * name.length >= 1
         * gears != null
         * gears.length >= 1
-        * loop: no entry is null in gears
-    "
-
-    Exerciser --* Gear
-    Exerciser --* Map
+        * loop: no entry is null in gears"
+    
+    Profile --* Gear
+    Profile --* Map
     
     class Gear {
         -GearType type
@@ -71,8 +171,7 @@ classDiagram
         * type != null
         * name != null
         * name.length() >= 1
-        * avgSpeed > 0
-    "
+        * avgSpeed > 0"
     
     Gear --* GearType
     
@@ -84,24 +183,27 @@ classDiagram
         ELECTRIC_BIKE,
         TANDEM_BIKE
     }
-
+    
     class Map {
         -int width
         -int length
         -List~Obstacle~ obstacles
         -SortedSet~Activity~ activities
-
+        
         +getWidth() int
         +getLength() int
+        +getTotalNumSteps(LocalDate, ChronoUnit) int
         +getObstacles() List~Obstacle~
-        +getActivities() SortedSet~Activity~
         +addObstacle(int, int, int, int) void
         +removeObstacle(int) void
-        +addActivity(Activity) void
+        +getActivities() SortedSet~Activity~
+        +addActivivity(Activity) void
         +removeActivity(int) void
-        +isInFeature(MapFeatureType type, int, int) boolean
+        +isInObstacle(int, int) boolean
+        +isInRoute(int, int) boolean
+        +isInRoute(int, int, int) boolean
     }
-
+    
     note for Map"invariants:
         * width >= 1
         * length >= 1
@@ -110,9 +212,9 @@ classDiagram
         * loop: no entry is null in obstacles
         * loop: no obstacle is out of boundaries
         * loop: no entry is null in activities
-        * loop: no activity is out of boundaries
-        * activities and obstacles don't overlap"
-
+        * loop: no activity route is out of boundaries
+        * routes and obstacles don't overlap"
+    
     Map --* Obstacle
     Map --* Activity
     
@@ -120,29 +222,40 @@ classDiagram
         -Gear gear
         -LocalDateTime start
         -LocalDateTime end
-        -List~Coordinate~ coordinates
+        -Route route
         -double avgSpeed
         
-        +getStepsAmount() int
         +getAvgSpeed() double
-        +getCoordinate(int) Coordinate
         +getStart() LocalDateTime
         +getEnd() LocalDateTime
         +getGear() Gear
+        +getRoute() Route
         +endActivity() void
-        +move(Direction, int) void
-        +contains(int, int) boolean
     }
     
     note for Activity"invariants:
         * gear != null
         * start != null
-        * coordinates != null
-        * coordinates.size() >= 1
+        * route != null
         * avgSpeed >= 0"
-
+    
     Activity --o Gear
-    Activity --* Coordinate
+    Activity --* Route
+    
+    class Route {
+        -List~Coordinate~ coordinates
+        
+        +getStepsAmount() int
+        +getCoordinate(int) Coordinate
+        +move(int, int) void
+        +contains(int, int) boolean
+    }
+    
+    note for Route"invariants:
+        * coordinates != null
+        * coordinates.size() >= 1"
+    
+    Route --* Coordinate
     
     class Obstacle {
         -Coordinate topLeftCoord
@@ -152,84 +265,18 @@ classDiagram
     }
     
     note for Obstacle"invariants:
-        * upperLeftX >= 0
-        * upperLeftY >= 0
-        * lowerRightX > upperLeftX
-        * lowerRightY > upperLeftY"
+        * topLeftCoord != null
+        * bottomRightCoord != null
+        * bottomRightCoord is lower and to the right of topLeftCoord"
     
     Obstacle --* Coordinate
-        
+    
     class Coordinate {
         -int x
         -int y
-        
-        +getX() int
-        +getY() int
     }
     
     note for Coordinate "invariants:
         * x >= 0
-        * y >= 0
-    "
-    
-%%    class ExerciserPrinter{
-%%        -Exerciser exerciser
-%%        
-%%        +print() void
-%%    }
-%%    
-%%    note for ExerciserPrinter"invariants:
-%%        * exerciser != null
-%%    "
-%%    
-%%    ExerciserPrinter --o Exerciser
-%%    
-%%    class GearPrinter {
-%%        -Gear gear
-%%        
-%%        +print() void
-%%    }
-%%    
-%%    note for GearPrinter"invariants:
-%%        * gear != null
-%%    "
-%%    
-%%    GearPrinter --o Gear
-%%
-%%    class MapPrinter {
-%%        -Map map
-%%        
-%%        printMap() void
-%%        printMap(int) void
-%%    }
-%%    
-%%    note for MapPrinter"invariants:
-%%        * map != null
-%%    "
-%%    
-%%    MapPrinter --o Map
-%%    
-%%    class ActivityPrinter {
-%%        -Activity activity
-%%        
-%%        print() void
-%%    }
-%%    
-%%    note for ActivityPrinter"invariants:
-%%        * activity != null
-%%    "
-%%
-%%    class ObstaclePrinter {
-%%        -Obstacle obstacle
-%%
-%%        +print() void
-%%    }
-%%
-%%    note for ObstaclePrinter"invariants:
-%%        * obstacles != null
-%%    "
-%%
-%%    ObstaclePrinter --o Obstacle
-%%    
-%%    ActivityPrinter --o Activity
+        * y >= 0"
 ```
