@@ -136,15 +136,12 @@ Here's my domain model:
 ```mermaid 
 classDiagram
     class Profile {
-        -Map map
+        -int id
         -String name
         -SortedSet~Gear~ gears
         
         +getName() String
         +setName() void
-        +getMap() Map
-        +addMap(Map) void
-        +removeMap() void
         +getGears() SortedSet~Gear~
         +getGear(int) Gear
         +addGear(Gear) boolean
@@ -152,6 +149,7 @@ classDiagram
     }
     
     note for Profile"invariants:
+        * id > 0
         * name != null
         * name.length >= 1
         * gears != null
@@ -159,7 +157,7 @@ classDiagram
         * loop: no entry is null in gears"
     
     Profile --* Gear
-    Profile --* Map
+    Profile --* Activity
     
     class Gear {
         -GearType type
@@ -216,7 +214,7 @@ classDiagram
         * routes and obstacles don't overlap"
     
     Map --* Obstacle
-    Map --* Activity
+    Map --o Route
     
     class Activity{
         -Gear gear

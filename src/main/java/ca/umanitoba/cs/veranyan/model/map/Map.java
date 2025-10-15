@@ -20,7 +20,6 @@ public class Map {
     private final int width; // should be > 0
     private final int length; // should be > 0
     private final List<Obstacle> obstacles;
-    private final SortedSet<Activity> activities;
 
     /**
      * The width and length will be used to instantiate a new Map
@@ -56,15 +55,6 @@ public class Map {
         this.width = width;
         this.length = length;
         this.obstacles = new ArrayList<>();
-
-        // activities should not have duplicates.
-        // activities are put in ascending order in the Set (ordered by start time).
-        this.activities = new TreeSet<>(new Comparator<Activity>() {
-            @Override
-            public int compare(Activity o1, Activity o2) {
-                return o1.getStart().compareTo(o2.getStart());
-            }
-        });
 
         checkMap();
     }
@@ -169,45 +159,6 @@ public class Map {
         checkMap();
 
         obstacles.remove(index);
-
-        checkMap();
-    }
-
-    /**
-     * @return the unmodifiable list of activities on the Map. Must not be {@code null}.
-     */
-    public SortedSet<Activity> getActivities() {
-        checkMap();
-
-        return Collections.unmodifiableSortedSet(activities);
-    }
-
-    /**
-     * Adds an activity to the Map instance.
-     * @param activity the activity instance to add to Map. Must not be {@code null}.
-     */
-    public void addActivity(Activity activity){
-        checkMap();
-
-        activities.add(activity);
-
-        checkMap();
-    }
-
-    /**
-     * Removes an activity from the Map by index.
-     * @param index the index of the activity to remove.
-     */
-    public void removeActivity(int index){
-        checkMap();
-
-        Iterator<Activity> iterator = activities.iterator();
-
-        // omitting previous elements to reach element at appropriate index;
-        for(int j = 0; j < index; j++)
-            iterator.next();
-
-        activities.remove(iterator.next());
 
         checkMap();
     }

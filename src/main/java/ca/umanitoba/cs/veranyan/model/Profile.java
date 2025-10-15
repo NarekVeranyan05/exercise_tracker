@@ -5,11 +5,7 @@ import ca.umanitoba.cs.veranyan.model.gear.GearType;
 import ca.umanitoba.cs.veranyan.model.map.Map;
 import com.google.common.base.Preconditions;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.Iterator;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * The Profile is the class representing the user of this
@@ -18,9 +14,10 @@ import java.util.Comparator;
  * a particular Activity, and the {@link Activity} instances.
  */
 public class Profile {
-    private Map map; // map singleton
     private String name;
     private final SortedSet<Gear> gears;
+    private final SortedSet<Activity> activities;
+    private final Set<Profile> friends;
 
     /**
      * Constructor for Profile.
@@ -41,6 +38,17 @@ public class Profile {
 
         // adding initial gear
         this.gears.add(gear);
+
+        // activities should not have duplicates.
+        // activities are put in ascending order in the Set (ordered by start time).
+        this.activities = new TreeSet<>(new Comparator<Activity>() {
+            @Override
+            public int compare(Activity o1, Activity o2) {
+                return o1.getStart().compareTo(o2.getStart());
+            }
+        });
+
+        this.friends = new TreeSet<>();
 
         checkProfile();
     }
@@ -64,40 +72,6 @@ public class Profile {
         this.name = name;
 
         checkProfile();
-    }
-
-    /**
-     * @return the Map singleton added to the system. Or null if no map added. May be {@code null}.
-     */
-    public Map getMap() {
-        checkProfile();
-
-        return map;
-    }
-
-    /**
-     * Adds a new Map to the system.
-     * @param map the Map singleton to add (must not be {@code null})
-     */
-    public void addMap(Map map){
-        checkProfile();
-
-        Preconditions.checkNotNull(map, "map cannot be null.");
-        Preconditions.checkState(this.map == null, "previous map was not removed.");
-        checkProfile();
-
-        this.map = map;
-
-        checkProfile();
-    }
-
-    /**
-     * Removes the Map from the system.
-     */
-    public void removeMap(){
-        checkProfile();
-
-        map = null;
     }
 
     /**
@@ -160,17 +134,75 @@ public class Profile {
     }
 
     /**
+     * @return the unmodifiable list of activities on the Map. Must not be {@code null}.
+     */
+    public SortedSet<Activity> getActivities(int amount) {
+        checkProfile();;
+
+        return Collections.unmodifiableSortedSet(activities);
+    }
+
+    /**
+     * Adds an activity to the Map instance.
+     * @param activity the activity instance to add to Map. Must not be {@code null}.
+     */
+    public void addActivity(Activity activity){
+        checkProfile();;
+
+        activities.add(activity);
+
+        checkProfile();;
+    }
+
+    /**
+     * Removes an activity from the Map by index.
+     * @param index the index of the activity to remove.
+     */
+    public void removeActivity(int index){
+        checkProfile();
+
+        Iterator<Activity> iterator = activities.iterator();
+
+        // omitting previous elements to reach element at appropriate index;
+        for(int j = 0; j < index; j++)
+            iterator.next();
+
+        activities.remove(iterator.next());
+
+        checkProfile();;
+    }
+
+    /**
      * Ensures Profile invariants are not violated.
      */
     private void checkProfile(){
+        /*
+            private String name;
+    private final SortedSet<Gear> gears;
+    private final SortedSet<Activity> activities;
+    private final Set<Profile> friends;
+         */
+
         Preconditions.checkNotNull(name, "name cannot be null.");
         Preconditions.checkState(!name.isBlank(), "name cannot be blank.");
         Preconditions.checkNotNull(gears, "gears cannot be null.");
         Preconditions.checkState(!gears.isEmpty(), "gears should have at least one entry.");
+        Preconditions.checkNotNull(activities, "activities cannot be null.");
+        Preconditions.checkNotNull(friends, "friends cannot be null.");
 
         // Gear cannot be null
         for (var gear : gears)
             Preconditions.checkNotNull(gear, "gears entry cannot be null.");
+
+        // Friend cannot be null, Profile cannot follow themselves
+        for (var friend : friends){
+            Preconditions.checkNotNull(friend, "friend profile cannot be null");
+            Preconditions.checkState(this != friend, "profile cannot follow themselves");
+        }
+
+        // Activity cannot be null
+        for (var activity : activities)
+            Preconditions.checkNotNull(activity, "activities entries cannot be null.");
     }
 
 }
